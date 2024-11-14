@@ -14,7 +14,6 @@ import "react-toastify/dist/ReactToastify.css";
 import OtpVerificationModal from "../../../../utils/Modals/OtpVerificationModal";
 import GoogleAuthButton from "../../../../utils/GoogleAuth/GoogleAuthButton";
 
-
 const SignUp = () => {
 	const [formData, setFormData] = useState({
 		full_name: "",
@@ -107,9 +106,9 @@ const SignUp = () => {
 			);
 			if (response.status === 201) {
 				setOtpModalOpen(true);
-					setTimeout(() => {
-						toast.success(response?.data?.message);
-					}, 2000);
+				setTimeout(() => {
+					toast.success(response?.data?.message);
+				}, 2000);
 			}
 		} catch (error) {
 			console.log("Sign Up Submit Error: ", error);
@@ -145,6 +144,13 @@ const SignUp = () => {
 		} finally {
 			setIsLoadingOtp(false);
 		}
+	};
+
+	const onGoogleSignUpSuccess = async () => {
+		toast.success("Google sign-in was successful.");
+		setTimeout(() => {
+			navigate("/home");
+		}, 2000);
 	};
 
 	const resendOtp = async () => {
@@ -362,11 +368,16 @@ const SignUp = () => {
 									<div className="line"></div>
 								</div>
 							</div>
+							<div className="google-signin">
+								<GoogleAuthButton
+									className="google-button"
+									onSuccessRedirect={onGoogleSignUpSuccess}
+								/>
+							</div>
 						</form>
 					</div>
 				</div>
 			</div>
-			<GoogleAuthButton onSuccessRedirect={()=> navigate("/signin")} />
 			{/* OTP Modal */}
 			<OtpVerificationModal
 				isOpen={otpModalOpen}

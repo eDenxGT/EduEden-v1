@@ -1,4 +1,3 @@
-// GoogleAuthButton.js
 import { GoogleLogin } from "@react-oauth/google";
 import { toast } from "react-toastify";
 import { axiosInstance } from "../../api/axiosConfig";

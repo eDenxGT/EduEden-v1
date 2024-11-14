@@ -15,10 +15,11 @@ const StudentSchema = new mongoose.Schema(
 		},
 		phone: {
 			type: Number,
+			required: function(){ return this.google_id ? false : true },
 		},
 		password: {
 			type: String,
-			required: true,
+			required: function(){ return this.google_id ? false : true },
 		},
 		google_id: {
 			type: String,

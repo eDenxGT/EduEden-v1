@@ -185,8 +185,9 @@ const resendOtp = async (req, res) => {
 };
 
 const googleAuth = async (req, res) => {
-	const {token} = req.body;
+	const { token } = req.body;
 	try {
+		
 		const client = new OAuth2Client({
 			clientId: process.env.GOOGLE_CLIENT_ID,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -195,45 +196,46 @@ const googleAuth = async (req, res) => {
 			idToken: token,
 			audience: process.env.GOOGLE_CLIENT_ID,
 		});
+		
 		const payload = ticket.getPayload();
 
-		if(!email_verified) {
-			return res.status(401).json({ error: 'Email not verified' });
+		if (!payload.email_verified) {
+			return res.status(401).json({ message: "Email not verified" });
 		}
-		const student = await Student.findOne({ email: payload.email });
+		let student = await Student.findOne({ email: payload.email });
 		if (!student) {
-			const newStudent = new Student({
+			student = new Student({
 				full_name: payload.name,
 				user_name: payload.name,
 				email: payload.email,
 				google_id: payload.sub,
 				avatar: payload.picture,
-			})
-			await newStudent.save()
+			});
+			await student.save();
 		} else if (!student.google_id) {
 			student.google_id = payload.sub;
-			if(!student.avatar) {
-				student.avatar = payload.picture
+			if (!student.avatar) {
+				student.avatar = payload.picture;
 			}
 			await student.save();
 		}
 
-		console.log(payload);
-
 		const userToken = jwt.sign(
 			{
-				email: payload.email,
-				full_name: payload.name,
-				avatar: payload.picture,
+				id: student._id,
 			},
 			JWT_SECRET,
 			{ expiresIn: "1h" }
 		);
-		return res.status(200).json({ token: userToken });
 
+		const { password: _, ...studentDetails } = student.toObject();
+
+		return res
+			.status(200)
+			.json({ token: userToken, userData: studentDetails });
 	} catch (error) {
-		res.status(401).json({ error: 'Invalid Google token' });
-		console.log("Google Auth Error: ", error.message);
+		res.status(401).json({ message: error.message });
+		console.log("Google Auth Error: ", error);
 	}
 };
 
@@ -242,5 +244,5 @@ module.exports = {
 	studentSignUp,
 	verifyOtp,
 	resendOtp,
-	googleAuth
+	googleAuth,
 };
