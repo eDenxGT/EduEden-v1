@@ -8,7 +8,6 @@ const StudentSchema = new mongoose.Schema(
 		},
 		user_name: {
 			type: String,
-			required: true,
 		},
 		email: {
 			type: String,
@@ -16,7 +15,6 @@ const StudentSchema = new mongoose.Schema(
 		},
 		phone: {
 			type: Number,
-			required: true,
 		},
 		password: {
 			type: String,

@@ -12,6 +12,8 @@ import { FiArrowRight } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import OtpVerificationModal from "../../../../utils/Modals/OtpVerificationModal";
+import GoogleAuthButton from "../../../../utils/GoogleAuth/GoogleAuthButton";
+
 
 const SignUp = () => {
 	const [formData, setFormData] = useState({
@@ -359,23 +361,12 @@ const SignUp = () => {
 									</span>
 									<div className="line"></div>
 								</div>
-								<div className="google-signup">
-									<Button
-										className="google-button"
-										disabled={!formData.agreeTerms}>
-										<img
-											src={Google}
-											alt="Google logo"
-											className="google-icon"
-										/>
-										Google
-									</Button>
-								</div>
 							</div>
 						</form>
 					</div>
 				</div>
 			</div>
+			<GoogleAuthButton onSuccessRedirect={()=> navigate("/signin")} />
 			{/* OTP Modal */}
 			<OtpVerificationModal
 				isOpen={otpModalOpen}

@@ -5,6 +5,7 @@ const hashPassword = require("../utils/hashPassword");
 const bcrypt = require("bcryptjs");
 const dotenv = require("dotenv");
 const { sendOTPEmail } = require("../utils/emailUtils");
+const { OAuth2Client } = require("google-auth-library");
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -76,7 +77,9 @@ const studentSignIn = async (req, res) => {
 		});
 
 		if (isUserUnverified) {
-			return res.status(403).json({ verified:false, message: "Verify your email" });
+			return res
+				.status(403)
+				.json({ verified: false, message: "Verify your email" });
 		}
 
 		if (!student && !isUserUnverified) {
@@ -160,11 +163,11 @@ const resendOtp = async (req, res) => {
 		const remainingTime = unverifiedUser.otpExpiry - Date.now();
 
 		if (remainingTime <= 5000) {
-		  unverifiedUser.otp = generateOTP();
-		  unverifiedUser.otpExpiry = new Date(Date.now() + 120000);
+			unverifiedUser.otp = generateOTP();
+			unverifiedUser.otpExpiry = new Date(Date.now() + 120000);
 		}
 		await unverifiedUser.save();
-		console.log( unverifiedUser.otp);
+		console.log(unverifiedUser.otp);
 
 		await sendOTPEmail(email, unverifiedUser.otp);
 
@@ -181,9 +184,63 @@ const resendOtp = async (req, res) => {
 	}
 };
 
+const googleAuth = async (req, res) => {
+	const {token} = req.body;
+	try {
+		const client = new OAuth2Client({
+			clientId: process.env.GOOGLE_CLIENT_ID,
+			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+		});
+		const ticket = await client.verifyIdToken({
+			idToken: token,
+			audience: process.env.GOOGLE_CLIENT_ID,
+		});
+		const payload = ticket.getPayload();
+
+		if(!email_verified) {
+			return res.status(401).json({ error: 'Email not verified' });
+		}
+		const student = await Student.findOne({ email: payload.email });
+		if (!student) {
+			const newStudent = new Student({
+				full_name: payload.name,
+				user_name: payload.name,
+				email: payload.email,
+				google_id: payload.sub,
+				avatar: payload.picture,
+			})
+			await newStudent.save()
+		} else if (!student.google_id) {
+			student.google_id = payload.sub;
+			if(!student.avatar) {
+				student.avatar = payload.picture
+			}
+			await student.save();
+		}
+
+		console.log(payload);
+
+		const userToken = jwt.sign(
+			{
+				email: payload.email,
+				full_name: payload.name,
+				avatar: payload.picture,
+			},
+			JWT_SECRET,
+			{ expiresIn: "1h" }
+		);
+		return res.status(200).json({ token: userToken });
+
+	} catch (error) {
+		res.status(401).json({ error: 'Invalid Google token' });
+		console.log("Google Auth Error: ", error.message);
+	}
+};
+
 module.exports = {
 	studentSignIn,
 	studentSignUp,
 	verifyOtp,
 	resendOtp,
+	googleAuth
 };

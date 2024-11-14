@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const chalk = require("chalk");
+const session = require('express-session')
 
 dotenv.config();
 
@@ -10,7 +11,17 @@ const authRouter = require('./routes/authRoute')
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+	origin: process.env.CLIENT_URL,
+	credentials: true
+}));
+
+app.use(session({
+	secret: process.env.JWT_SECRET,
+	resave: false,
+	saveUninitialized: false
+}))
+
 
 app.use('/auth', authRouter)
 
