@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { PiGraduationCap } from "react-icons/pi";
-import InputField from "../../../../components/commonComponents/InputField";
-import Button from "../../../../components/commonComponents/Button";
-import BoyPcImage from "../../../../assets/images/authPage/BoyPcImage.png";
+import InputField from "../../../components/commonComponents/InputField";
+import Button from "../../../components/commonComponents/Button";
+import BoyPcImage from "../../../assets/images/authPage/BoyPcImage.png";
 import { FiArrowRight } from "react-icons/fi";
-import { axiosInstance } from "../../../../api/axiosConfig";
+import { axiosInstance } from "../../../api/axiosConfig";
 import { Link, useNavigate } from "react-router-dom";
-import Spinner from "../../../../utils/Spinner/Spinner";
+import Spinner from "../../../utils/Spinner/Spinner";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import OtpVerificationModal from "../../../../utils/Modals/OtpVerificationModal";
-import GoogleAuthButton from "../../../../utils/GoogleAuth/GoogleAuthButton";
+import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
+import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
 
 const SignIn = () => {
 	const [formData, setFormData] = useState({
