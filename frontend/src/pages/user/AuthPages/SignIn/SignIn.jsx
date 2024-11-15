@@ -1,17 +1,16 @@
 import { useState } from "react";
-import Google from "../../../../assets/icons/Google.svg";
 import { PiGraduationCap } from "react-icons/pi";
 import InputField from "../../../../components/commonComponents/InputField";
 import Button from "../../../../components/commonComponents/Button";
 import BoyPcImage from "../../../../assets/images/authPage/BoyPcImage.png";
 import { FiArrowRight } from "react-icons/fi";
-import "./SignIn.scss";
 import { axiosInstance } from "../../../../api/axiosConfig";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Spinner from "../../../../utils/Spinner/Spinner";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import OtpVerificationModal from "../../../../utils/Modals/OtpVerificationModal";
+import GoogleAuthButton from "../../../../utils/GoogleAuth/GoogleAuthButton";
 
 const SignIn = () => {
 	const [formData, setFormData] = useState({
@@ -118,43 +117,70 @@ const SignIn = () => {
 		setOtpModalOpen(false);
 	};
 
+	const onGoogleSignInSuccess = async () => {
+		toast.success("Google sign-in was successful.");
+		setTimeout(() => {
+			navigate("/home");
+		}, 1500);
+	};
+
 	const toSignUp = () => {
 		navigate("/signup");
 	};
 
 	return (
 		<>
-			<div className="header">
-				<div className="logo">
-					<PiGraduationCap className="icon" />
-					<span className="brand">
-						<span className="brand-edu">Edu</span>
-						<span className="brand-eden">Eden</span>
+			<div className="flex justify-around items-center p-4 border-b border-gray-200">
+				<div className="flex items-center">
+					<PiGraduationCap className="h-6 w-6 text-[#ff5722]" />
+					<span className="ml-2 text-xl font-semibold">
+						<span className="text-gray-900">Edu</span>
+						<span className="text-[#ff5722]">Eden</span>
 					</span>
 				</div>
-				<div className="signup-prompt">
+				<div className="text-sm">
 					Don&apos;t have an account?
-					<button onClick={toSignUp} className="signup-button">
+					<button
+						onClick={toSignUp}
+						className="bg-[#ffeee8] text-[#ff5722] px-4 py-2 ml-4 rounded">
 						Create Account
 					</button>
 				</div>
 			</div>
 
-			<div className="signin-container">
-				<div className="illustration-section">
+			<div className="min-h-screen flex">
+				<div className="hidden lg:flex lg:w-1/2 bg-[#ebebff] items-center justify-center">
 					<img
 						src={BoyPcImage}
 						alt="Illustration"
-						className="pc-image"
+						className="max-w-[28rem]"
 					/>
 				</div>
 
-				<div className="form-section">
-					<div className="form-wrapper">
-						<h1 className="title">Sign in to your account</h1>
+				<div className="w-full lg:w-1/2 flex flex-col items-center justify-center">
+					<div className="max-w-[28rem] w-full mx-auto">
+						<h1 className="text-2xl font-bold text-gray-900 mb-3">
+							Sign in to your account
+						</h1>
 
-						<form className="signin-form" onSubmit={handleSubmit}>
-							<div style={{ position: "relative" }}>
+						<form
+							className="flex flex-col gap-2.5"
+							onSubmit={handleSubmit}>
+							<div>
+								<div className="mb-7">
+									<GoogleAuthButton
+										onSuccessRedirect={
+											onGoogleSignInSuccess
+										}
+									/>
+								</div>
+								<div className="flex items-center justify-center text-base font-semibold text-gray-600">
+									<div className="flex-grow border-t border-gray-300"></div>
+									<span className="px-2">OR</span>
+									<div className="flex-grow border-t border-gray-300"></div>
+								</div>
+							</div>
+							<div className="relative">
 								<InputField
 									label="Email"
 									placeholder="Username or email address..."
@@ -162,13 +188,13 @@ const SignIn = () => {
 									onChange={handleChange}
 								/>
 								{errors.email && (
-									<span className="error-text">
+									<span className="text-xs text-red-600 absolute -bottom-4 left-">
 										{errors.email}
 									</span>
 								)}
 							</div>
 
-							<div style={{ position: "relative" }}>
+							<div className="relative">
 								<InputField
 									onChange={handleChange}
 									label="Password"
@@ -180,63 +206,44 @@ const SignIn = () => {
 									}
 								/>
 								{errors.password && (
-									<span className="error-text">
+									<span className="text-xs text-red-600 absolute -bottom-4 left-0">
 										{errors.password}
 									</span>
 								)}
 							</div>
-
-							<div className="remember-me">
-								<label className="checkbox-label">
-									<input
-										type="checkbox"
-										className="checkbox-input"
-										name="remember"
-										checked={formData.remember}
-										onChange={handleChange}
-									/>
-									<span className="checkbox-text">
-										Remember me
-									</span>
-								</label>
-							</div>
-
-							<Button
-								type="submit"
-								text={isLoading ? "" : "Sign In"}
-								className="signin-btn"
-								disabled={
-									!isFormValid ||
-									isLoading ||
-									!formData.password ||
-									!formData.email
-								}>
-								{isLoading ? (
-									<Spinner size="small" />
-								) : (
-									<FiArrowRight />
-								)}
-							</Button>
-
-							<div className="social-signin">
-								<div className="divider">
-									<div className="line"></div>
-									<span className="divider-text">
-										SIGN IN WITH
-									</span>
-									<div className="line"></div>
-								</div>
-
-								<div className="google-signin">
-									<Button className="google-button">
-										<img
-											src={Google}
-											alt="Google logo"
-											className="google-icon"
+							<div>
+								<div className="flex items-center justify-between mt-4">
+									<label className="flex items-center text-gray-600">
+										<input
+											type="checkbox"
+											className="h-4 w-4 text-[#ff5722] border-gray-300 focus:ring-[#ff5722]"
+											name="remember"
+											checked={formData.remember}
+											onChange={handleChange}
 										/>
-										Google
-									</Button>
+										<span className="ml-2 text-xs">
+											Remember me
+										</span>
+									</label>
+										<Link to="/forgot-password" className="ml-2 hover:underline-offset-auto hover:underline text-[#ff5722] text-xs" ><span>Forgot Password?</span></Link>
 								</div>
+
+								<Button
+									type="submit"
+									text={isLoading ? "" : "Sign In"}
+									className="flex items-center justify-center gap-2 shadow-md mt-2"
+									disabled={
+										!isFormValid ||
+										isLoading ||
+										!formData.password ||
+										!formData.email
+									}>
+									{isLoading ? (
+										<Spinner size="small" />
+									) : (
+										<FiArrowRight className="w-4 h-4" />
+									)}
+								</Button>
 							</div>
 						</form>
 					</div>

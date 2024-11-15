@@ -47,6 +47,12 @@ const StudentSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false,
 		},
+		resetToken : {
+			type: String
+		},
+		resetTokenExpiry : {
+			type: Date
+		},
 		created_at: {
 			type: Date,
 			default: Date.now,

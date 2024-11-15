@@ -7,6 +7,8 @@ const {
 	verifyOtp,
 	resendOtp,
 	googleAuth,
+	forgotPassword,
+	resetPassword
 } = require("../controllers/authController");
 
 authRouter
@@ -14,7 +16,9 @@ authRouter
 	.post("/signup", studentSignUp)
 	.post("/verify-otp", verifyOtp)
 	.post("/resend-otp", resendOtp)
-	.post("/google", googleAuth);
+	.post("/google", googleAuth)
+	.post("/forgot-password", forgotPassword)
+	.post("/reset-password/:token", resetPassword)
 
 // .post("/admin/signin", adminSignIn);
 

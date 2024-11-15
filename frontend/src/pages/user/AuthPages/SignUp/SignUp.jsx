@@ -1,10 +1,8 @@
 import { useState } from "react";
 import GirlRocket from "../../../../assets/images/authPage/RocketGirlImage.png";
-import Google from "../../../../assets/icons/Google.svg";
 import { PiGraduationCap } from "react-icons/pi";
 import InputField from "../../../../components/commonComponents/InputField";
 import Button from "../../../../components/commonComponents/Button";
-import "./SignUp.scss";
 import { axiosInstance } from "../../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../../../../utils/Spinner/Spinner";
@@ -150,7 +148,7 @@ const SignUp = () => {
 		toast.success("Google sign-in was successful.");
 		setTimeout(() => {
 			navigate("/home");
-		}, 2000);
+		}, 1500);
 	};
 
 	const resendOtp = async () => {
@@ -175,34 +173,57 @@ const SignUp = () => {
 
 	return (
 		<>
-			<div className="header">
-				<div className="logo">
-					<PiGraduationCap className="icon" />
-					<span className="brand">
-						<span className="brand-edu">Edu</span>
-						<span className="brand-eden">Eden</span>
+			<div className="flex justify-around items-center p-4 border-b border-gray-200">
+				<div className="flex items-center">
+					<PiGraduationCap className="h-6 w-6 text-[#ff5722]" />
+					<span className="ml-2 text-xl font-semibold">
+						<span className="text-gray-900">Edu</span>
+						<span className="text-[#ff5722]">Eden</span>
 					</span>
 				</div>
-				<div className="login-prompt">
+				<div className="text-sm">
 					Already have an account?
-					<button onClick={toSignIn} className="login-button">
+					<button
+						onClick={toSignIn}
+						className="bg-[#ffeee8] text-[#ff5722] px-4 py-2 ml-4 rounded">
 						Login
 					</button>
 				</div>
 			</div>
-			<div className="signup-container">
-				<div className="illustration-section">
+
+			<div className="min-h-screen flex">
+				<div className="hidden lg:flex lg:w-1/2 bg-[#ebebff] items-center justify-center">
 					<img
 						src={GirlRocket}
-						alt="Rocket illustration"
-						className="rocket-image"
+						alt="Illustration"
+						className="max-w-[28rem]"
 					/>
 				</div>
-				<div className="form-section">
-					<div className="form-wrapper">
-						<h1 className="title">Create your account</h1>
-						<form className="signup-form" onSubmit={handleSubmit}>
-							<div className="input-wrapper">
+
+				<div className="w-full lg:w-1/2 flex flex-col items-center justify-center">
+					<div className="max-w-[28rem] w-full mx-auto">
+						<h1 className="text-2xl font-bold text-gray-900 mb-3">
+							Create your account
+						</h1>
+
+						<form
+							className="flex flex-col gap-0.5"
+							onSubmit={handleSubmit}>
+							<div>
+								<div className="mb-6">
+									<GoogleAuthButton
+										onSuccessRedirect={
+											onGoogleSignUpSuccess
+										}
+									/>
+								</div>
+								<div className="flex items-center justify-center text-base font-semibold text-gray-600">
+									<div className="flex-grow border-t border-gray-300"></div>
+									<span className="px-2">OR</span>
+									<div className="flex-grow border-t border-gray-300"></div>
+								</div>
+							</div>
+							<div className="relative">
 								<InputField
 									label="Full Name"
 									placeholder="Enter Full name"
@@ -212,13 +233,15 @@ const SignUp = () => {
 									error={errors.full_name}
 								/>
 								{errors.full_name && (
-									<span className="error-text">
+									<span
+										className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem]
+">
 										{errors.full_name}
 									</span>
 								)}
 							</div>
 
-							<div className="input-wrapper">
+							<div className="relative">
 								<InputField
 									label="Username"
 									placeholder="Enter Username"
@@ -228,13 +251,13 @@ const SignUp = () => {
 									error={errors.user_name}
 								/>
 								{errors.user_name && (
-									<span className="error-text">
+									<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem]">
 										{errors.user_name}
 									</span>
 								)}
 							</div>
 
-							<div className="input-wrapper">
+							<div className="relative">
 								<InputField
 									label="Email"
 									type="text"
@@ -245,13 +268,14 @@ const SignUp = () => {
 									error={errors.email}
 								/>
 								{errors.email && (
-									<span className="error-text">
+									<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem]">
+										{" "}
 										{errors.email}
 									</span>
 								)}
 							</div>
 
-							<div className="input-wrapper">
+							<div className="relative">
 								<InputField
 									label="Phone"
 									type="tel"
@@ -262,14 +286,15 @@ const SignUp = () => {
 									error={errors.phone}
 								/>
 								{errors.phone && (
-									<span className="error-text">
+									<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem]">
+										{" "}
 										{errors.phone}
 									</span>
 								)}
 							</div>
 
-							<div className="password-fields">
-								<div className="input-wrapper">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div className="relative">
 									<InputField
 										name="password"
 										label="Password"
@@ -286,13 +311,13 @@ const SignUp = () => {
 										error={errors.password}
 									/>
 									{errors.password && (
-										<span className="error-text-password">
+										<span className="text-xs text-red-600 absolute -bottom-4 left-0">
 											{errors.password}
 										</span>
 									)}
 								</div>
 
-								<div className="input-wrapper">
+								<div className="relative">
 									<InputField
 										name="confirmPassword"
 										label="Confirm Password"
@@ -313,25 +338,26 @@ const SignUp = () => {
 										error={errors.confirmPassword}
 									/>
 									{errors.confirmPassword && (
-										<span className="error-text-password">
+										<span className="text-xs text-red-600 absolute -bottom-4 left-0">
 											{errors.confirmPassword}
 										</span>
 									)}
 								</div>
 							</div>
 
-							<div className="terms">
+							<div className="flex items-center mt-5 mb-1">
 								<input
 									type="checkbox"
-									id="terms"
-									className="terms-checkbox"
+									className="h-4 w-4 text-[#ff5722] border-gray-300 focus:ring-[#ff5722]"
 									name="agreeTerms"
 									checked={formData.agreeTerms}
 									onChange={handleChange}
 								/>
-								<label htmlFor="terms" className="terms-label">
+								<label className="ml-2 text-xs text-gray-600">
 									I Agree with all of your{" "}
-									<a href="#" className="terms-link">
+									<a
+										href="#"
+										className="text-[#ff5722] hover:underline">
 										Terms & Conditions
 									</a>
 								</label>
@@ -340,7 +366,7 @@ const SignUp = () => {
 							<Button
 								type="submit"
 								text={isLoading ? "" : "Create Account"}
-								className="create-account-btn"
+								className="flex items-center justify-center gap-2 shadow-md"
 								disabled={
 									!isFormValid ||
 									!formData.full_name ||
@@ -355,30 +381,13 @@ const SignUp = () => {
 								{isLoading ? (
 									<Spinner size="small" />
 								) : (
-									<FiArrowRight />
+									<FiArrowRight className="w-4 h-4" />
 								)}
 							</Button>
-
-							<div className="social-signup">
-								<div className="divider">
-									<div className="line"></div>
-									<span className="divider-text">
-										SIGN UP WITH
-									</span>
-									<div className="line"></div>
-								</div>
-							</div>
-							<div className="google-signin">
-								<GoogleAuthButton
-									className="google-button"
-									onSuccessRedirect={onGoogleSignUpSuccess}
-								/>
-							</div>
 						</form>
 					</div>
 				</div>
 			</div>
-			{/* OTP Modal */}
 			<OtpVerificationModal
 				isOpen={otpModalOpen}
 				onClose={handleOtpModalClose}

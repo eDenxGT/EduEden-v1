@@ -1,13 +1,15 @@
+const UnverifiedUser = require("../models/unverifiedUserModel");
 const Student = require("../models/studentModel");
-const UnverifiedUser = require("../models/unVerifiedUserModel");
 const jwt = require("jsonwebtoken");
-const hashPassword = require("../utils/hashPassword");
+const { hashPassword, comparePassword } = require("../utils/passwordUtils");
 const bcrypt = require("bcryptjs");
 const dotenv = require("dotenv");
-const { sendOTPEmail } = require("../utils/emailUtils");
+const { sendOTPEmail, sendPasswordResetEmail } = require("../utils/emailUtils");
 const { OAuth2Client } = require("google-auth-library");
+const chalk = require("chalk");
 dotenv.config();
 
+const FRONTEND_URL = process.env.CLIENT_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const createToken = (id) => {
@@ -22,23 +24,20 @@ const studentSignUp = async (req, res) => {
 	try {
 		const { full_name, user_name, email, phone, password } = req.body;
 
-		const isUserExists = await UnverifiedUser.findOne({
-			user_name,
-			email,
-			phone,
-		});
 		const isUserVerified = await Student.findOne({
-			user_name,
-			email,
-			phone,
+			$or: [{ email }, { user_name }, { phone }],
 		});
+		const isUserExists = await UnverifiedUser.findOne({
+			$or: [{ email }, { user_name }, { phone }],
+		});
+
 		if (isUserExists || isUserVerified) {
 			return res.status(400).json({ message: "User already exists" });
 		}
 		const hashedPassword = await hashPassword(password);
 
 		const otp = generateOTP();
-		console.log(otp);
+		console.log(chalk.green(`OTP:${chalk.yellow(otp)} `));
 
 		const otpExpiry = Date.now() + 60000;
 
@@ -86,7 +85,7 @@ const studentSignIn = async (req, res) => {
 			return res.status(400).json({ message: "Account not found" });
 		}
 
-		const isMatch = await bcrypt.compare(password, student.password);
+		const isMatch = await comparePassword(password, student?.password);
 
 		if (!isMatch) {
 			return res.status(400).json({ message: "Incorrect Password" });
@@ -187,7 +186,6 @@ const resendOtp = async (req, res) => {
 const googleAuth = async (req, res) => {
 	const { token } = req.body;
 	try {
-		
 		const client = new OAuth2Client({
 			clientId: process.env.GOOGLE_CLIENT_ID,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -196,7 +194,7 @@ const googleAuth = async (req, res) => {
 			idToken: token,
 			audience: process.env.GOOGLE_CLIENT_ID,
 		});
-		
+
 		const payload = ticket.getPayload();
 
 		if (!payload.email_verified) {
@@ -239,10 +237,81 @@ const googleAuth = async (req, res) => {
 	}
 };
 
+const forgotPassword = async (req, res) => {
+	try {
+		const { email } = req.body;
+		console.log(email);
+
+		const student = await Student.findOne({ email });
+		if (!student) {
+			return res.status(404).json({ message: "User not found." });
+		}
+		const token = jwt.sign({ id: student._id }, JWT_SECRET, {
+			expiresIn: "15m",
+		});
+		student.resetToken = token;
+		student.resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
+
+		await student.save();
+
+		const link = `${FRONTEND_URL}/reset-password/${token}?name=${student.full_name}`;
+		await sendPasswordResetEmail(email, link);
+		return res.status(200).json({ message: "Email sent successfully." });
+	} catch (error) {
+		console.log("Forgot Password Error: ", error);
+		return res.status(500).json({ message: "Something went wrong." });
+	}
+};
+
+const resetPassword = async (req, res) => {
+	try {
+		const { token } = req.params;
+		const { newPassword, confirmPassword } = req.body;
+		console.log(newPassword, confirmPassword);
+		if (newPassword !== confirmPassword) {
+			return res.status(400).json({ message: "Password does not match" });
+		}
+
+		const student = await Student.findOne({
+			resetToken: token,
+			resetTokenExpiry: { $gt: Date.now() },
+		});
+		if (!student) {
+			return res
+				.status(400)
+				.json({ message: "Invalid or expired token." });
+		}
+		const oldPassword = await comparePassword(
+			newPassword,
+			student?.password||""
+		);
+		if (oldPassword) {
+			return res
+				.status(400)
+				.json({ message: "Password cannot be same as old password" });
+		}
+
+		const hashedPassword = await hashPassword(newPassword);
+
+		student.password = hashedPassword;
+		student.resetToken = undefined;
+		student.resetTokenExpiry = undefined;
+		await student.save();
+		return res
+			.status(200)
+			.json({ message: "Password reset successfully." });
+	} catch (error) {
+		res.status(500).json({ message: error });
+		console.log("Reset password Error: ", error);
+	}
+};
+
 module.exports = {
 	studentSignIn,
 	studentSignUp,
 	verifyOtp,
 	resendOtp,
 	googleAuth,
+	forgotPassword,
+	resetPassword,
 };

@@ -38,7 +38,7 @@ const sendEmail = async (email, subject, htmlContent) => {
 	}
 };
 const sendOTPEmail = async (email, otp) => {
-   const htmlContent = `
+	const htmlContent = `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
          <!-- Logo Text Section -->
          <div style="text-align: center; margin-bottom: 30px;">
@@ -82,11 +82,9 @@ const sendOTPEmail = async (email, otp) => {
       </div>
    `;
 
-   const subject = '🔑 Verify Your EduEden Account';
-   await sendEmail(email, subject, htmlContent);
-}
-
-
+	const subject = "🔑 Verify Your EduEden Account";
+	await sendEmail(email, subject, htmlContent);
+};
 
 const sendWelcomeMail = async (email) => {
 	const subject = "Welcome to EduEden";
@@ -94,9 +92,58 @@ const sendWelcomeMail = async (email) => {
 };
 
 const sendPasswordResetEmail = async (email, resetLink) => {
-	const message = `Click the link below to reset your password: ${resetLink}`;
-	const subject = "Password Reset Request";
-	sendEmail(email, subject);
+	const htmlContent = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+         <!-- Logo Text Section -->
+         <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="font-size: 48px; font-weight: bold; margin: 0;">
+               🎓 <span style="color: #333333;">Edu</span><span style="color: #FF5722;">Eden</span>
+            </h1>
+         </div>
+
+         <h2 style="color: #ff5722; text-align: center; margin-bottom: 30px;">
+            Password Reset Request 🔒
+         </h2>
+         
+         <p style="font-size: 16px; line-height: 1.5; margin-bottom: 20px;">
+            We received a request to reset the password associated with this email address. If this was you, click the button below to set a new password. If you didn't make this request, you can ignore this email.
+         </p>
+         
+         <div style="text-align: center; margin: 25px 0;">
+            <a href="${resetLink}" style="display: inline-block; background-color: #ff5722; color: #ffffff; padding: 15px 30px; font-size: 18px; font-weight: bold; text-decoration: none; border-radius: 5px;">
+               Reset My Password
+            </a>
+         </div>
+         
+         <p style="font-size: 14px; color: #666; margin-top: 20px;">
+            If the button above doesn't work, you can copy and paste the following link into your browser:
+         </p>
+         
+         <div style="background-color: #f9f9f9; border-radius: 8px; padding: 10px; word-break: break-all;">
+            <a href="${resetLink}" style="color: #ff5722; text-decoration: none;">
+               ${resetLink}
+            </a>
+         </div>
+
+         <p style="font-size: 14px; color: #666; margin-top: 20px;">
+            This link will expire in 1 hour. 🔒 For your security, please don't share this link with anyone.
+         </p>
+         
+         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+            <p style="font-size: 14px; color: #888;">
+               Questions? We're here to help! 💡<br>
+               Contact us at <a href="mailto:support@edueden.com" style="color: #ff5722; text-decoration: none;">support@edueden.com</a>
+            </p>
+         </div>
+
+         <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #888;">
+            © ${new Date().getFullYear()} EduEden. All rights reserved.
+         </div>
+      </div>
+   `;
+
+	const subject = "🔑 Reset Your EduEden Password";
+	await sendEmail(email, subject, htmlContent);
 };
 
 module.exports = {

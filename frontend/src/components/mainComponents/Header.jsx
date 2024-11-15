@@ -1,4 +1,4 @@
-import { Search, Bell, Heart, ShoppingCart, ChevronDown } from "lucide-react";
+import { Search, Bell, Heart, ShoppingCart } from "lucide-react";
 import Button from "../commonComponents/Button";
 import { PiGraduationCap } from "react-icons/pi";
 

@@ -2,6 +2,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { toast } from "react-toastify";
 import { axiosInstance } from "../../api/axiosConfig";
 
+/* eslint-disable */
 const GoogleAuthButton = ({ onSuccessRedirect }) => {
     const handleGoogleSuccess = async (response) => {
         try {
