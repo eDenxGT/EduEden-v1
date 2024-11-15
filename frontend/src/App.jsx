@@ -6,7 +6,7 @@ import OtpVerificationModal from "./utils/Modals/OtpVerificationModal";
 import ForgotPassword from "./pages/user/AuthPages/ForgotPassword";
 import ResetPassword from "./pages/user/AuthPages/ResetPassword";
 
-// import StudentHomePage from "./pages/user/StudentHomePage";
+import StudentHomePage from "./pages/user/StudentHomePage";
 
 function App() {
 	return (
@@ -19,7 +19,7 @@ function App() {
 				<Route path="/forgot-password" element={<ForgotPassword />} />
 				<Route path="/reset-password/:token" element={<ResetPassword />} />
 
-				{/* <Route path="/home" element={<StudentHomePage />} /> */}
+				<Route path="/home" element={<StudentHomePage />} />
 			</Routes>
 		</Router>
 	);
