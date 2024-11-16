@@ -4,10 +4,14 @@ import InputField from "../../../components/commonComponents/InputField";
 import Button from "../../../components/commonComponents/Button";
 import { FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { axiosInstance } from "../../../api/axiosConfig";
-import { useNavigate, Link, useParams, useSearchParams } from "react-router-dom";
+import {
+	useNavigate,
+	Link,
+	useParams,
+	useSearchParams,
+} from "react-router-dom";
 import Spinner from "../../../utils/Spinner/Spinner";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toaster, toast } from "sonner";
 import ResetPasswordImage from "../../../assets/images/authPage/ResetPassImage.png";
 
 const ResetPassword = () => {
@@ -25,7 +29,11 @@ const ResetPassword = () => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setErrors({});
-		if (!newPassword || !confirmPassword || newPassword !== confirmPassword) {
+		if (
+			!newPassword ||
+			!confirmPassword ||
+			newPassword !== confirmPassword
+		) {
 			return toast.error("Please fix the validation errors.");
 		}
 		setIsLoading(true);
@@ -45,7 +53,9 @@ const ResetPassword = () => {
 				}, 1500);
 			}
 		} catch (error) {
-			const errorMessage = error?.response?.data?.message || "An error occurred while resetting the password.";
+			const errorMessage =
+				error?.response?.data?.message ||
+				"An error occurred while resetting the password.";
 			toast.error(errorMessage);
 		} finally {
 			setIsLoading(false);
@@ -59,14 +69,19 @@ const ResetPassword = () => {
 			setNewPassword(value);
 			setErrors((prev) => ({
 				...prev,
-				newPassword: value.length < 6 ? "At least 6 characters required" : "",
-				confirmPassword: confirmPassword && value !== confirmPassword ? "Passwords do not match" : ""
+				newPassword:
+					value.length < 6 ? "At least 6 characters required" : "",
+				confirmPassword:
+					confirmPassword && value !== confirmPassword
+						? "Passwords do not match"
+						: "",
 			}));
 		} else if (name === "confirmPassword") {
 			setConfirmPassword(value);
 			setErrors((prev) => ({
 				...prev,
-				confirmPassword: newPassword !== value ? "Passwords do not match" : "",
+				confirmPassword:
+					newPassword !== value ? "Passwords do not match" : "",
 			}));
 		}
 	};
@@ -98,25 +113,37 @@ const ResetPassword = () => {
 								{username && (
 									<>
 										Hi
-										<span className="text-[#ff5722]"> {username}!</span>
+										<span className="text-[#ff5722]">
+											{" "}
+											{username}!
+										</span>
 									</>
 								)}
 								<br /> Reset Your Password
 							</h1>
 							<p className="text-gray-600 mb-6 text-sm">
-								Choose a strong, unique password to keep your account secure.
+								Choose a strong, unique password to keep your
+								account secure.
 							</p>
-							<form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+							<form
+								className="flex flex-col gap-4"
+								onSubmit={handleSubmit}>
 								<div className="relative">
 									<InputField
 										label="New Password"
-										type={showNewPassword ? "text" : "password"}
+										type={
+											showNewPassword
+												? "text"
+												: "password"
+										}
 										placeholder="Enter your new password"
 										name="newPassword"
 										value={newPassword}
 										onChange={handleChange}
 										showPassword={showNewPassword}
-										setShowPassword={() => setShowNewPassword(!showNewPassword)}
+										setShowPassword={() =>
+											setShowNewPassword(!showNewPassword)
+										}
 									/>
 									{errors.newPassword && (
 										<span className="text-xs text-red-600 absolute -bottom-4 left-0">
@@ -127,13 +154,21 @@ const ResetPassword = () => {
 								<div className="relative">
 									<InputField
 										label="Confirm Password"
-										type={showConfirmPassword ? "text" : "password"}
+										type={
+											showConfirmPassword
+												? "text"
+												: "password"
+										}
 										placeholder="Confirm your new password"
 										name="confirmPassword"
 										value={confirmPassword}
 										onChange={handleChange}
 										showPassword={showConfirmPassword}
-										setShowPassword={() => setShowConfirmPassword(!showConfirmPassword)}
+										setShowPassword={() =>
+											setShowConfirmPassword(
+												!showConfirmPassword
+											)
+										}
 									/>
 									{errors.confirmPassword && (
 										<span className="text-xs text-red-600 absolute -bottom-4 left-0">
@@ -146,9 +181,18 @@ const ResetPassword = () => {
 									type="submit"
 									className="flex items-center mt-3 justify-center gap-2 shadow-md"
 									text={isLoading ? "" : "Reset Password"}
-									disabled={isLoading || errors.newPassword || errors.confirmPassword || !newPassword || !confirmPassword}
-								>
-									{isLoading ? <Spinner size="small" /> : <FiArrowRight className="w-4 h-4" />}
+									disabled={
+										isLoading ||
+										errors.newPassword ||
+										errors.confirmPassword ||
+										!newPassword ||
+										!confirmPassword
+									}>
+									{isLoading ? (
+										<Spinner size="small" />
+									) : (
+										<FiArrowRight className="w-4 h-4" />
+									)}
 								</Button>
 
 								<Link to="/signin" className="mt-4 text-center">
@@ -162,7 +206,7 @@ const ResetPassword = () => {
 					</div>
 				</div>
 			</div>
-			<ToastContainer position="top-left" autoClose={2000} />
+			<Toaster position="top-left" richColors />
 		</div>
 	);
 };

@@ -6,8 +6,7 @@ import { FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { axiosInstance } from "../../../api/axiosConfig";
 import { Link } from "react-router-dom";
 import Spinner from "../../../utils/Spinner/Spinner";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toaster, toast } from "sonner";
 import ForgotPassImage from "../../../assets/images/authPage/ForgotPassImage.png";
 
 const ForgotPassword = () => {
@@ -18,14 +17,14 @@ const ForgotPassword = () => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 
-      if (
-         !email.includes("@") ||
-         !email.includes(".") ||
-         /[^a-zA-Z0-9@.]/.test(email)
-      ) {
-         setError("Invalid email address");
-         return;
-      }
+		if (
+			!email.includes("@") ||
+			!email.includes(".") ||
+			/[^a-zA-Z0-9@.]/.test(email)
+		) {
+			setError("Invalid email address");
+			return;
+		}
 
 		setIsLoading(true);
 
@@ -76,8 +75,8 @@ const ForgotPassword = () => {
 							</h1>
 							<p className="text-gray-600 mb-8">
 								Enter the email address associated with your
-								account and we&#39;ll send you a link to reset your
-								password.
+								account and we&#39;ll send you a link to reset
+								your password.
 							</p>
 
 							<form
@@ -103,7 +102,7 @@ const ForgotPassword = () => {
 
 								<Button
 									type="submit"
-                           className="flex items-center justify-center gap-2 shadow-md"
+									className="flex items-center justify-center gap-2 shadow-md"
 									text={isLoading ? "" : "Reset Password"}
 									disabled={isLoading || !email}>
 									{isLoading ? (
@@ -124,7 +123,7 @@ const ForgotPassword = () => {
 					</div>
 				</div>
 			</div>
-			<ToastContainer position="top-left" autoClose={2000} />
+			<Toaster position="top-left" richColors />
 		</>
 	);
 };

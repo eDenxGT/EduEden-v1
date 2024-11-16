@@ -7,7 +7,7 @@ import { FiArrowRight } from "react-icons/fi";
 import { axiosInstance } from "../../../api/axiosConfig";
 import { Link, useNavigate } from "react-router-dom";
 import Spinner from "../../../utils/Spinner/Spinner";
-import { ToastContainer, toast } from "react-toastify";
+import { Toaster, toast } from "sonner";
 import "react-toastify/dist/ReactToastify.css";
 import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
 import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
@@ -225,7 +225,11 @@ const SignIn = () => {
 											Remember me
 										</span>
 									</label>
-										<Link to="/forgot-password" className="ml-2 hover:underline-offset-auto hover:underline text-[#ff5722] text-xs" ><span>Forgot Password?</span></Link>
+									<Link
+										to="/forgot-password"
+										className="ml-2 hover:underline-offset-auto hover:underline text-[#ff5722] text-xs">
+										<span>Forgot Password?</span>
+									</Link>
 								</div>
 
 								<Button
@@ -256,7 +260,7 @@ const SignIn = () => {
 				isLoading={isLoadingOtp}
 				onResendOtp={resendOtp}
 			/>
-			<ToastContainer position="top-left" autoClose={2000} />
+			<Toaster position="top-left" richColors />
 		</>
 	);
 };

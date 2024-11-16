@@ -14,8 +14,7 @@ function App() {
 		<Router>
 			<Routes>
 				<Route path="/" element={<LandingPage />} />
-				<Route path="/signup" element={<SignUp />} />
-				<Route path="/signin" element={<Signin />} />
+
 				<Route path="/verify-otp" element={<OtpVerificationModal />} />
 				<Route path="/forgot-password" element={<ForgotPassword />} />
 				<Route path="/reset-password/:token" element={<ResetPassword />} />

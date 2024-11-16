@@ -7,10 +7,9 @@ import { axiosInstance } from "../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../../../utils/Spinner/Spinner";
 import { FiArrowRight } from "react-icons/fi";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
 import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
+import { Toaster, toast } from "sonner";
 
 const SignUp = () => {
 	const [formData, setFormData] = useState({
@@ -83,6 +82,7 @@ const SignUp = () => {
 			Object.values({ ...errors, [name]: error }).every((err) => !err)
 		);
 	};
+
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -189,7 +189,7 @@ const SignUp = () => {
 						Login
 					</button>
 				</div>
-			</div>
+			</div> 
 
 			<div className="min-h-screen flex">
 				<div className="hidden lg:flex lg:w-1/2 bg-[#ebebff] items-center justify-center">
@@ -395,7 +395,7 @@ const SignUp = () => {
 				isLoading={isLoadingOtp}
 				onResendOtp={resendOtp}
 			/>
-			<ToastContainer position="top-left" autoClose={2000} />
+      <Toaster position="top-left" richColors />
 		</>
 	);
 };

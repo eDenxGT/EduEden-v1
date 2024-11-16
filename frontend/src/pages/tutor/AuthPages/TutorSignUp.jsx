@@ -1,36 +1,46 @@
 import { useState } from "react";
-import tutorSignupImage from "../../../assets/images/authPage/RocketGirlImage.png";
-import { AiOutlineUser, AiOutlineMail, AiOutlinePhone } from "react-icons/ai";
-import { RiLockPasswordLine } from "react-icons/ri";
-import { MdLocationOn } from "react-icons/md";
+import TutorImage from "../../../assets/images/authPage/RocketGirlImage.png";
+import { PiGraduationCap } from "react-icons/pi";
+import InputField from "../../../components/commonComponents/InputField";
 import Button from "../../../components/commonComponents/Button";
-import Input from "../../../components/commonComponents/InputField";
-import Checkbox from "../../../components/commonComponents/Card";
+import { axiosInstance } from "../../../api/axiosConfig";
+import { useNavigate } from "react-router-dom";
+import Spinner from "../../../utils/Spinner/Spinner";
+import { FiArrowRight } from "react-icons/fi";
+import { Toaster, toast } from "sonner";
+import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
+import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
 
 const TutorSignup = () => {
 	const [formData, setFormData] = useState({
-		name: "",
+		full_name: "",
+		user_name: "",
 		email: "",
 		phone: "",
 		password: "",
-		location: "",
-		subjects: [],
-		availability: [],
-		bio: "",
-		agree: false,
+		confirmPassword: "",
+		subject: "",
+		experience: "",
+		agreeTerms: false,
 	});
-
 	const [errors, setErrors] = useState({
-		name: "",
+		full_name: "",
+		user_name: "",
 		email: "",
 		phone: "",
 		password: "",
-		location: "",
-		subjects: "",
-		availability: "",
-		bio: "",
-		agree: "",
+		confirmPassword: "",
+		subject: "",
+		experience: "",
+		agreeTerms: "",
 	});
+	const [showPassword, setShowPassword] = useState(false);
+	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingOtp, setIsLoadingOtp] = useState(false);
+	const [isFormValid, setIsFormValid] = useState(false);
+	const [otpModalOpen, setOtpModalOpen] = useState(false);
+	const navigate = useNavigate();
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
@@ -39,88 +49,365 @@ const TutorSignup = () => {
 			[name]: type === "checkbox" ? checked : value,
 		});
 
-		// Validate fields and update errors
+		let error = "";
+		if (name === "email") {
+			if (
+				!value.includes("@") ||
+				!value.includes(".") ||
+				/[^a-zA-Z0-9@.]/.test(value)
+			) {
+				error = "Invalid email address";
+			}
+		} else if (name === "password") {
+			if (value.length < 6) {
+				error = "Password must be at least 6 characters";
+			}
+		} else if (name === "confirmPassword") {
+			if (value !== formData.password) {
+				error = "Passwords do not match";
+			}
+		} else if (name === "full_name") {
+			if (value.length < 3) {
+				error = "At least 3 characters";
+			}
+		} else if (name === "user_name") {
+			if (value.length < 3) {
+				error = "At least 3 characters";
+			}
+		} else if (name === "phone") {
+			if (!/^\d+$/.test(value) || value.length !== 10) {
+				error = "Must be 10 digits";
+			}
+		} else if (name === "subject") {
+			if (value.length < 2) {
+				error = "Subject is required";
+			}
+		} else if (name === "experience") {
+			if (isNaN(value) || value < 0) {
+				error = "Enter valid years of experience";
+			}
+		} else if (name === "agreeTerms" && !checked) {
+			error = "You must agree to the terms";
+		}
+		setErrors({ ...errors, [name]: error });
+		setIsFormValid(
+			Object.values({ ...errors, [name]: error }).every((err) => !err)
+		);
 	};
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
-		// Handle form submission
+		setIsLoading(true);
+		if (!isFormValid) return;
+
+		const formDataToSend = new FormData();
+
+		Object.keys(formData).forEach((key) => {
+			if (formData[key] !== "") {
+				formDataToSend.append(key, formData[key]);
+			}
+		});
+
+		try {
+			const response = await axiosInstance.post(
+				"/auth/tutor-signup",
+				formDataToSend
+			);
+			if (response.status === 201) {
+				setOtpModalOpen(true);
+				setTimeout(() => {
+					toast.success(response?.data?.message);
+				}, 2000);
+			}
+		} catch (error) {
+			console.log("Tutor Sign Up Submit Error: ", error);
+			toast.error(error?.response?.data?.message);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+
+	const handleOtpModalClose = () => {
+		setOtpModalOpen(false);
+	};
+
+	const handleOtpVerify = async (otpString) => {
+		try {
+			setIsLoadingOtp(true);
+
+			const response = await axiosInstance.post(
+				"/auth/verify-tutor-otp",
+				{
+					email: formData.email,
+					otp: otpString,
+				}
+			);
+
+			if (response.status === 200) {
+				toast.success(response?.data?.message);
+				setOtpModalOpen(false);
+				setTimeout(() => {
+					navigate("/tutor-dashboard");
+				}, 2000);
+			}
+		} catch (error) {
+			toast.error(error?.response?.data?.message);
+			console.log("Otp verify error :", error);
+		} finally {
+			setIsLoadingOtp(false);
+		}
+	};
+
+	const onGoogleSignUpSuccess = async () => {
+		toast.success("Google sign-in was successful.");
+		setTimeout(() => {
+			navigate("/tutor-dashboard");
+		}, 1500);
+	};
+
+	const resendOtp = async () => {
+		try {
+			const response = await axiosInstance.post("auth/resend-tutor-otp", {
+				email: formData.email,
+			});
+			if (response.status === 200) {
+				setTimeout(() => {
+					toast.success(response?.data?.message);
+				}, 2000);
+			}
+		} catch (error) {
+			toast.error(error?.response?.data?.message);
+			console.error("Failed to resend OTP:", error);
+		}
+	};
+
+	const toTutorSignIn = () => {
+		navigate("/tutor-signin");
 	};
 
 	return (
-		<div className="flex justify-between items-center h-screen">
-			<div className="w-1/2 bg-[#F4F7FF] flex justify-center items-center">
-				<img
-					src={tutorSignupImage}
-					alt="Tutor Signup"
-					className="max-w-[24rem]"
-				/>
+		<>
+			<div className="flex justify-around items-center p-4 border-b border-gray-200">
+				<div className="flex items-center">
+					<PiGraduationCap className="h-6 w-6 text-[#ff5722]" />
+					<span className="ml-2 text-xl font-semibold">
+						<span className="text-gray-900">Edu</span>
+						<span className="text-[#ff5722]">Eden</span>
+					</span>
+				</div>
+				<div className="text-sm">
+					Already have a tutor account?
+					<button
+						onClick={toTutorSignIn}
+						className="bg-[#ffeee8] text-[#ff5722] px-4 py-2 ml-4 rounded">
+						Login
+					</button>
+				</div>
 			</div>
-			<div className="w-1/2 p-8">
-				<h1 className="text-3xl font-bold mb-6">Become a Tutor</h1>
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<Input
-						name="name"
-						label="Full Name"
-						icon={<AiOutlineUser />}
-						value={formData.name}
-						onChange={handleChange}
-						error={errors.name}
+
+			<div className="min-h-screen flex">
+				<div className="hidden lg:flex lg:w-1/2 bg-[#ebebff] items-center justify-center">
+					<img
+						src={TutorImage}
+						alt="Tutor Illustration"
+						className="max-w-[28rem]"
 					/>
-					<Input
-						name="email"
-						label="Email Address"
-						icon={<AiOutlineMail />}
-						value={formData.email}
-						onChange={handleChange}
-						error={errors.email}
-					/>
-					<Input
-						name="phone"
-						label="Phone Number"
-						icon={<AiOutlinePhone />}
-						value={formData.phone}
-						onChange={handleChange}
-						error={errors.phone}
-					/>
-					<Input
-						name="password"
-						label="Password"
-						type="password"
-						icon={<RiLockPasswordLine />}
-						value={formData.password}
-						onChange={handleChange}
-						error={errors.password}
-					/>
-					<Input
-						name="location"
-						label="Location"
-						icon={<MdLocationOn />}
-						value={formData.location}
-						onChange={handleChange}
-						error={errors.location}
-					/>
-					<div className="flex items-center mt-5 mb-1">
-						<input
-							type="checkbox"
-							className="h-4 w-4 text-[#ff5722] border-gray-300 focus:ring-[#ff5722]"
-							name="agreeTerms"
-							checked={formData.agreeTerms}
-							onChange={handleChange}
-						/>
-						<label className="ml-2 text-xs text-gray-600">
-							I Agree with all of your{" "}
-							<a
-								href="#"
-								className="text-[#ff5722] hover:underline">
-								Terms & Conditions
-							</a>
-						</label>
-					</div>{" "}
-					<Button type="submit" text="Become a Tutor" />
-				</form>
+				</div>
+
+				<div className="w-full lg:w-1/2 flex flex-col items-center justify-center">
+					<div className="max-w-[28rem] w-full mx-auto">
+						<h1 className="text-2xl font-bold text-gray-900 mb-3">
+							Create your tutor account
+						</h1>
+
+						<form
+							className="flex flex-col gap-0.5"
+							onSubmit={handleSubmit}>
+							<div>
+								<div className="mb-6">
+									<GoogleAuthButton
+										onSuccessRedirect={
+											onGoogleSignUpSuccess
+										}
+									/>
+								</div>
+								<div className="flex items-center justify-center text-base font-semibold text-gray-600">
+									<div className="flex-grow border-t border-gray-300"></div>
+									<span className="px-2">OR</span>
+									<div className="flex-grow border-t border-gray-300"></div>
+								</div>
+							</div>
+							<div className="relative">
+								<InputField
+									label="Full Name"
+									placeholder="Enter Full name"
+									name="full_name"
+									value={formData.full_name}
+									onChange={handleChange}
+									error={errors.full_name}
+								/>
+								{errors.full_name && (
+									<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem]">
+										{errors.full_name}
+									</span>
+								)}
+							</div>
+
+							<div className="relative">
+								<InputField
+									label="Username"
+									placeholder="Enter Username"
+									name="user_name"
+									value={formData.user_name}
+									onChange={handleChange}
+									error={errors.user_name}
+								/>
+								{errors.user_name && (
+									<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem]">
+										{errors.user_name}
+									</span>
+								)}
+							</div>
+
+							<div className="relative">
+								<InputField
+									label="Email"
+									type="text"
+									placeholder="Enter Email address"
+									name="email"
+									value={formData.email}
+									onChange={handleChange}
+									error={errors.email}
+								/>
+								{errors.email && (
+									<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem]">
+										{errors.email}
+									</span>
+								)}
+							</div>
+
+							<div className="relative">
+								<InputField
+									label="Phone"
+									type="tel"
+									placeholder="Enter Phone number"
+									name="phone"
+									value={formData.phone}
+									onChange={handleChange}
+									error={errors.phone}
+								/>
+								{errors.phone && (
+									<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem]">
+										{errors.phone}
+									</span>
+								)}
+							</div>
+
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div className="relative">
+									<InputField
+										name="password"
+										label="Password"
+										placeholder="Create password"
+										type={
+											showPassword ? "text" : "password"
+										}
+										value={formData.password}
+										onChange={handleChange}
+										showPassword={showPassword}
+										setShowPassword={() =>
+											setShowPassword(!showPassword)
+										}
+										error={errors.password}
+									/>
+									{errors.password && (
+										<span className="text-xs text-red-600 absolute -bottom-4 left-0">
+											{errors.password}
+										</span>
+									)}
+								</div>
+
+								<div className="relative">
+									<InputField
+										name="confirmPassword"
+										label="Confirm Password"
+										placeholder="Confirm password"
+										type={
+											showConfirmPassword
+												? "text"
+												: "password"
+										}
+										value={formData.confirmPassword}
+										onChange={handleChange}
+										showPassword={showConfirmPassword}
+										setShowPassword={() =>
+											setShowConfirmPassword(
+												!showConfirmPassword
+											)
+										}
+										error={errors.confirmPassword}
+									/>
+									{errors.confirmPassword && (
+										<span className="text-xs text-red-600 absolute -bottom-4 left-0">
+											{errors.confirmPassword}
+										</span>
+									)}
+								</div>
+							</div>
+
+							<div className="flex items-center mt-5 mb-1">
+								<input
+									type="checkbox"
+									className="h-4 w-4 text-[#ff5722] border-gray-300 focus:ring-[#ff5722]"
+									name="agreeTerms"
+									checked={formData.agreeTerms}
+									onChange={handleChange}
+								/>
+								<label className="ml-2 text-xs text-gray-600">
+									I Agree with all of your{" "}
+									<a
+										href="#"
+										className="text-[#ff5722] hover:underline">
+										Terms & Conditions
+									</a>
+								</label>
+							</div>
+
+							<Button
+								type="submit"
+								text={isLoading ? "" : "Create Tutor Account"}
+								className="flex items-center justify-center gap-2 shadow-md"
+								disabled={
+									!isFormValid ||
+									!formData.full_name ||
+									!formData.phone ||
+									!formData.password ||
+									!formData.email ||
+									!formData.user_name ||
+									!formData.confirmPassword ||
+									!formData.agreeTerms ||
+									isLoading
+								}>
+								{isLoading ? (
+									<Spinner size="small" />
+								) : (
+									<FiArrowRight className="w-4 h-4" />
+								)}
+							</Button>
+						</form>
+					</div>
+				</div>
 			</div>
-		</div>
+			<OtpVerificationModal
+				isOpen={otpModalOpen}
+				onClose={handleOtpModalClose}
+				onVerify={handleOtpVerify}
+				isLoading={isLoadingOtp}
+				onResendOtp={resendOtp}
+			/>
+			<Toaster position="top-left" richColors />
+		</>
 	);
 };
 

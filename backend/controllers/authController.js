@@ -1,5 +1,7 @@
 const UnverifiedUser = require("../models/unverifiedUserModel");
 const Student = require("../models/studentModel");
+const Tutor = require('../models/tutorModel')
+
 const jwt = require("jsonwebtoken");
 const { hashPassword, comparePassword } = require("../utils/passwordUtils");
 const bcrypt = require("bcryptjs");
@@ -49,6 +51,7 @@ const studentSignUp = async (req, res) => {
 			password: hashedPassword,
 			otp,
 			otpExpiry,
+			role:"student"
 		});
 
 		await unverifiedUser.save();
@@ -125,17 +128,29 @@ const verifyOtp = async (req, res) => {
 		if (Date.now() > unverifiedUser.otpExpiry) {
 			return res.status(400).json({ message: "OTP has expired" });
 		}
+		if(unverifiedUser.role === 'student') {
 
-		const student = new Student({
-			full_name: unverifiedUser.full_name,
-			user_name: unverifiedUser.user_name,
-			email: unverifiedUser.email,
-			phone: unverifiedUser.phone,
-			password: unverifiedUser.password,
-			is_verified: true,
-		});
+			const student = new Student({
+				full_name: unverifiedUser.full_name,
+				user_name: unverifiedUser.user_name,
+				email: unverifiedUser.email,
+				phone: unverifiedUser.phone,
+				password: unverifiedUser.password,
+				is_verified: true,
+			});
+			await student.save();
+		} else if(unverifiedUser.role === 'tutor') {
 
-		await student.save();
+			const tutor = new Tutor({
+				full_name: unverifiedUser.full_name,
+				user_name: unverifiedUser.user_name,
+				email: unverifiedUser.email,
+				phone: unverifiedUser.phone,
+				password: unverifiedUser.password,
+				is_verified: true,
+			});
+			await tutor.save();
+		}
 
 		await UnverifiedUser.deleteOne({ email });
 
@@ -305,6 +320,57 @@ const resetPassword = async (req, res) => {
 		console.log("Reset password Error: ", error);
 	}
 };
+	const tutorSignUp = async (req, res) => {
+		try {
+		  const { full_name, user_name, email, phone, password, job_title, bio } = req.body;
+	 
+		  const isUserVerified = await Tutor.findOne({
+			 $or: [{ email }, { user_name }, { phone }],
+		  });
+		  const isStudentExists = await Student.findOne({ email });
+		  const isUserExists = await UnverifiedUser.findOne({
+			 $or: [{ email }, { user_name }, { phone }],
+		  });
+	 
+		  if (isUserVerified || isStudentExists || isUserExists) {
+			 return res.status(400).json({ message: "User already exists" });
+		  }
+	 
+		  const hashedPassword = await hashPassword(password);
+	 
+		  const otp = generateOTP();
+		  console.log(chalk.green(`OTP:${chalk.yellow(otp)} `));
+	 
+		  const otpExpiry = Date.now() + 60000;
+	 
+		  const unverifiedTutor = new UnverifiedUser({
+			 full_name,
+			 user_name,
+			 email,
+			 phone,
+			 password: hashedPassword,
+			 otp,
+			 otpExpiry,
+			 role: 'tutor'
+		  });
+	 
+		  await unverifiedTutor.save();
+	 
+		  await sendOTPEmail(email, otp);
+	 
+		  return res.status(201).json({
+			 message: "OTP sent to your email.",
+		  });
+		} catch (error) {
+		  console.log("Tutor SignUp Error: ", error);
+		  res.status(500).json({ message: "Something went wrong" });
+		}
+	 };
+	 
+
+const tutorSignIn => {
+
+}
 
 module.exports = {
 	studentSignIn,
