@@ -172,6 +172,7 @@ const SignIn = () => {
 										onSuccessRedirect={
 											onGoogleSignInSuccess
 										}
+										role={'student'}
 									/>
 								</div>
 								<div className="flex items-center justify-center text-base font-semibold text-gray-600">

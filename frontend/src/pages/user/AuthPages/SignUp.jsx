@@ -9,7 +9,7 @@ import Spinner from "../../../utils/Spinner/Spinner";
 import { FiArrowRight } from "react-icons/fi";
 import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
 import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 
 const SignUp = () => {
 	const [formData, setFormData] = useState({
@@ -127,6 +127,7 @@ const SignUp = () => {
 			const response = await axiosInstance.post("/auth/verify-otp", {
 				email: formData.email,
 				otp: otpString,
+				role: "student",
 			});
 
 			if (response.status === 200) {
@@ -147,7 +148,7 @@ const SignUp = () => {
 	const onGoogleSignUpSuccess = async () => {
 		toast.success("Google sign-in was successful.");
 		setTimeout(() => {
-			navigate("/home");
+			navigate("/student/home");
 		}, 1500);
 	};
 
@@ -215,6 +216,7 @@ const SignUp = () => {
 										onSuccessRedirect={
 											onGoogleSignUpSuccess
 										}
+										role={'student'}
 									/>
 								</div>
 								<div className="flex items-center justify-center text-base font-semibold text-gray-600">
@@ -395,7 +397,6 @@ const SignUp = () => {
 				isLoading={isLoadingOtp}
 				onResendOtp={resendOtp}
 			/>
-      <Toaster position="top-left" richColors />
 		</>
 	);
 };

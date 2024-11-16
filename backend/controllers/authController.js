@@ -1,6 +1,6 @@
 const UnverifiedUser = require("../models/unverifiedUserModel");
 const Student = require("../models/studentModel");
-const Tutor = require('../models/tutorModel')
+const Tutor = require("../models/tutorModel");
 
 const jwt = require("jsonwebtoken");
 const { hashPassword, comparePassword } = require("../utils/passwordUtils");
@@ -26,6 +26,10 @@ const studentSignUp = async (req, res) => {
 	try {
 		const { full_name, user_name, email, phone, password } = req.body;
 
+		const isTutorExists = await Tutor.findOne({
+			$or: [{ email }, { user_name }, { phone }],
+		});
+
 		const isUserVerified = await Student.findOne({
 			$or: [{ email }, { user_name }, { phone }],
 		});
@@ -33,7 +37,7 @@ const studentSignUp = async (req, res) => {
 			$or: [{ email }, { user_name }, { phone }],
 		});
 
-		if (isUserExists || isUserVerified) {
+		if (isUserExists || isUserVerified || isTutorExists) {
 			return res.status(400).json({ message: "User already exists" });
 		}
 		const hashedPassword = await hashPassword(password);
@@ -43,7 +47,7 @@ const studentSignUp = async (req, res) => {
 
 		const otpExpiry = Date.now() + 60000;
 
-		const unverifiedUser = new UnverifiedUser({
+		const unverifiedStudent = new UnverifiedUser({
 			full_name,
 			user_name,
 			email,
@@ -51,10 +55,10 @@ const studentSignUp = async (req, res) => {
 			password: hashedPassword,
 			otp,
 			otpExpiry,
-			role:"student"
+			role: "student",
 		});
 
-		await unverifiedUser.save();
+		await unverifiedStudent.save();
 
 		await sendOTPEmail(email, otp);
 
@@ -73,11 +77,18 @@ const studentSignIn = async (req, res) => {
 		const student = await Student.findOne({
 			$or: [{ email }, { user_name: email }],
 		});
+		const isTutorAccount = await Tutor.findOne({
+			$or: [{ email }, { user_name: email }],
+		});
+		if (isTutorAccount) {
+			return res
+				.status(400)
+				.json({ message: "This account is a tutor account" });
+		}
 
 		const isUserUnverified = await UnverifiedUser.findOne({
 			$or: [{ email }, { user_name: email }],
 		});
-
 		if (isUserUnverified) {
 			return res
 				.status(403)
@@ -113,7 +124,7 @@ const studentSignIn = async (req, res) => {
 
 const verifyOtp = async (req, res) => {
 	try {
-		const { email, otp } = req.body;
+		const { email, otp, role } = req.body;
 
 		const unverifiedUser = await UnverifiedUser.findOne({ email });
 
@@ -128,8 +139,7 @@ const verifyOtp = async (req, res) => {
 		if (Date.now() > unverifiedUser.otpExpiry) {
 			return res.status(400).json({ message: "OTP has expired" });
 		}
-		if(unverifiedUser.role === 'student') {
-
+		if (unverifiedUser.role === "student") {
 			const student = new Student({
 				full_name: unverifiedUser.full_name,
 				user_name: unverifiedUser.user_name,
@@ -139,8 +149,7 @@ const verifyOtp = async (req, res) => {
 				is_verified: true,
 			});
 			await student.save();
-		} else if(unverifiedUser.role === 'tutor') {
-
+		} else if (unverifiedUser.role === "tutor") {
 			const tutor = new Tutor({
 				full_name: unverifiedUser.full_name,
 				user_name: unverifiedUser.user_name,
@@ -181,7 +190,11 @@ const resendOtp = async (req, res) => {
 			unverifiedUser.otpExpiry = new Date(Date.now() + 120000);
 		}
 		await unverifiedUser.save();
-		console.log(unverifiedUser.otp);
+		console.log(
+			chalk.greenBright(
+				`Resent OTP:${chalk.yellowBright(unverifiedUser.otp)} `
+			)
+		);
 
 		await sendOTPEmail(email, unverifiedUser.otp);
 
@@ -199,7 +212,7 @@ const resendOtp = async (req, res) => {
 };
 
 const googleAuth = async (req, res) => {
-	const { token } = req.body;
+	const { token, role } = req.body;
 	try {
 		const client = new OAuth2Client({
 			clientId: process.env.GOOGLE_CLIENT_ID,
@@ -215,37 +228,72 @@ const googleAuth = async (req, res) => {
 		if (!payload.email_verified) {
 			return res.status(401).json({ message: "Email not verified" });
 		}
-		let student = await Student.findOne({ email: payload.email });
-		if (!student) {
-			student = new Student({
-				full_name: payload.name,
-				user_name: payload.name,
-				email: payload.email,
-				google_id: payload.sub,
-				avatar: payload.picture,
-			});
-			await student.save();
-		} else if (!student.google_id) {
-			student.google_id = payload.sub;
-			if (!student.avatar) {
-				student.avatar = payload.picture;
+
+		let user;
+		if (role === "student") {
+			const isTutorExists = await Tutor.findOne({ email: payload.email });
+			if (isTutorExists) {
+				return res
+					.status(401)
+					.json({ message: "Tutor account already exists" });
 			}
-			await student.save();
+			user = await Student.findOne({ email: payload.email });
+			if (!user) {
+				user = new Student({
+					full_name: payload.name,
+					email: payload.email,
+					google_id: payload.sub,
+					avatar: payload.picture,
+				});
+				await user.save();
+			} else if (!user.google_id) {
+				user.google_id = payload.sub;
+				if (!user.avatar) {
+					user.avatar = payload.picture;
+				}
+				await user.save();
+			}
+		} else if (role === "tutor") {
+			const isStudentExists = await Student.findOne({
+				email: payload.email,
+			});
+
+			if (isStudentExists) {
+				return res
+					.status(401)
+					.json({ message: "Student account already exists" });
+			}
+			user = await Tutor.findOne({ email: payload.email });
+			if (!user) {
+				user = new Tutor({
+					full_name: payload.name,
+					email: payload.email,
+					google_id: payload.sub,
+					avatar: payload.picture,
+				});
+				await user.save();
+			} else if (!user.google_id) {
+				user.google_id = payload.sub;
+				if (!user.avatar) {
+					user.avatar = payload.picture;
+				}
+				await user.save();
+			}
 		}
 
 		const userToken = jwt.sign(
 			{
-				id: student._id,
+				id: user._id,
 			},
 			JWT_SECRET,
 			{ expiresIn: "1h" }
 		);
 
-		const { password: _, ...studentDetails } = student.toObject();
+		const { password: _, ...userDetails } = user.toObject();
 
 		return res
 			.status(200)
-			.json({ token: userToken, userData: studentDetails });
+			.json({ token: userToken, userData: userDetails });
 	} catch (error) {
 		res.status(401).json({ message: error.message });
 		console.log("Google Auth Error: ", error);
@@ -298,7 +346,7 @@ const resetPassword = async (req, res) => {
 		}
 		const oldPassword = await comparePassword(
 			newPassword,
-			student?.password||""
+			student?.password || ""
 		);
 		if (oldPassword) {
 			return res
@@ -320,57 +368,109 @@ const resetPassword = async (req, res) => {
 		console.log("Reset password Error: ", error);
 	}
 };
-	const tutorSignUp = async (req, res) => {
-		try {
-		  const { full_name, user_name, email, phone, password, job_title, bio } = req.body;
-	 
-		  const isUserVerified = await Tutor.findOne({
-			 $or: [{ email }, { user_name }, { phone }],
-		  });
-		  const isStudentExists = await Student.findOne({ email });
-		  const isUserExists = await UnverifiedUser.findOne({
-			 $or: [{ email }, { user_name }, { phone }],
-		  });
-	 
-		  if (isUserVerified || isStudentExists || isUserExists) {
-			 return res.status(400).json({ message: "User already exists" });
-		  }
-	 
-		  const hashedPassword = await hashPassword(password);
-	 
-		  const otp = generateOTP();
-		  console.log(chalk.green(`OTP:${chalk.yellow(otp)} `));
-	 
-		  const otpExpiry = Date.now() + 60000;
-	 
-		  const unverifiedTutor = new UnverifiedUser({
-			 full_name,
-			 user_name,
-			 email,
-			 phone,
-			 password: hashedPassword,
-			 otp,
-			 otpExpiry,
-			 role: 'tutor'
-		  });
-	 
-		  await unverifiedTutor.save();
-	 
-		  await sendOTPEmail(email, otp);
-	 
-		  return res.status(201).json({
-			 message: "OTP sent to your email.",
-		  });
-		} catch (error) {
-		  console.log("Tutor SignUp Error: ", error);
-		  res.status(500).json({ message: "Something went wrong" });
+const tutorSignUp = async (req, res) => {
+	try {
+		const { full_name, user_name, email, phone, password, job_title, bio } =
+			req.body;
+
+		const isUserVerified = await Tutor.findOne({
+			$or: [{ email }, { user_name }, { phone }],
+		});
+		const isStudentExists = await Student.findOne({ email });
+		const isUserExists = await UnverifiedUser.findOne({
+			$or: [{ email }, { user_name }, { phone }],
+		});
+
+		if (isUserVerified || isStudentExists || isUserExists) {
+			return res.status(400).json({ message: "User already exists" });
 		}
-	 };
-	 
 
-const tutorSignIn => {
+		const hashedPassword = await hashPassword(password);
 
-}
+		const otp = generateOTP();
+		console.log(chalk.greenBright(`OTP:${chalk.yellowBright(otp)} `));
+
+		const otpExpiry = Date.now() + 60000;
+
+		const unverifiedTutor = new UnverifiedUser({
+			full_name,
+			user_name,
+			email,
+			phone,
+			password: hashedPassword,
+			otp,
+			otpExpiry,
+			role: "tutor",
+		});
+
+		await unverifiedTutor.save();
+
+		await sendOTPEmail(email, otp);
+
+		return res.status(201).json({
+			message: "OTP sent to your email.",
+		});
+	} catch (error) {
+		console.log("Tutor SignUp Error: ", error);
+		res.status(500).json({ message: "Something went wrong" });
+	}
+};
+
+const tutorSignIn = async (req, res) => {
+	try {
+		const { email, password, remember } = req.body;
+
+		const tutor = await Tutor.findOne({
+			$or: [{ email }, { user_name: email }],
+		});
+
+		const isStudent = await Student.findOne({
+			$or: [{ email }, { user_name: email }],
+		});
+
+		if (isStudent) {
+			return res
+				.status(400)
+				.json({ message: "This account is a student account" });
+		}
+
+		const isUserUnverified = await UnverifiedUser.findOne({
+			$or: [{ email }, { user_name: email }],
+		});
+
+		if (isUserUnverified) {
+			return res
+				.status(403)
+				.json({ verified: false, message: "Verify your email" });
+		}
+
+		if (!tutor && !isUserUnverified) {
+			return res.status(400).json({ message: "Account not found" });
+		}
+
+		const isMatch = await comparePassword(password, tutor?.password);
+
+		if (!isMatch) {
+			return res.status(400).json({ message: "Incorrect Password" });
+		}
+
+		const token = jwt.sign({ id: tutor._id }, JWT_SECRET, {
+			expiresIn: remember ? "7d" : "1d",
+		});
+
+		const { password: _, ...tutorDetails } = tutor.toObject();
+
+		res.status(200).json({
+			message: "Tutor logged in successfully",
+			token,
+			tutor: tutorDetails,
+		});
+	} catch (error) {
+		console.log("SignIn Error: ", error);
+		res.status(500).json({ message: "Internal server error" });
+	}
+};
+
 
 module.exports = {
 	studentSignIn,
@@ -380,4 +480,6 @@ module.exports = {
 	googleAuth,
 	forgotPassword,
 	resetPassword,
+	tutorSignUp,
+	tutorSignIn
 };

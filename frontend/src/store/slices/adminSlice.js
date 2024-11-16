@@ -1,26 +1,26 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const INITIAL_STATE = {
-	studentData: null,
+	adminData: null,
 	token: null,
 	toggleTheme: false,
 	isAuthenticated: false
 };
 
-const studentSlice = createSlice({
-	name: "student",
+const adminSlice = createSlice({
+	name: "admin",
 	initialState: INITIAL_STATE,
 	reducers: {
-		studentLogin(state, action) {
-			state.studentData = action.payload.studentData;
+		adminLogin(state, action) {
+			state.adminData = action.payload.adminData;
 			state.token = action.payload.token;
 			state.isAuthenticated = true
 		},
-		studentChangeTheme(state, action) {
+		adminChangeTheme(state, action) {
 			state.toggleTheme = action.payload;
 		},
-		studentLogout(state) {
-			state.studentData = null;
+		adminLogout(state) {
+			state.adminData = null;
 			state.token = null;
 			state.isAuthenticated = false
 			localStorage.getItem("activeItem") &&
@@ -29,6 +29,6 @@ const studentSlice = createSlice({
 	},
 });
 
-export const {studentChangeTheme, studentLogin, studentLogout} = studentSlice.actions;
+export const {adminChangeTheme, adminLogin, adminLogout} = adminSlice.actions;
 
-export default studentSlice.reducer;
+export default adminSlice.reducer;

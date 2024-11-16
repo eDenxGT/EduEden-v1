@@ -7,7 +7,7 @@ import { axiosInstance } from "../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../../../utils/Spinner/Spinner";
 import { FiArrowRight } from "react-icons/fi";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
 import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
 
@@ -110,7 +110,7 @@ const TutorSignup = () => {
 
 		try {
 			const response = await axiosInstance.post(
-				"/auth/tutor-signup",
+				"/auth/tutor/signup",
 				formDataToSend
 			);
 			if (response.status === 201) {
@@ -137,7 +137,7 @@ const TutorSignup = () => {
 			setIsLoadingOtp(true);
 
 			const response = await axiosInstance.post(
-				"/auth/verify-tutor-otp",
+				"/auth/verify-otp",
 				{
 					email: formData.email,
 					otp: otpString,
@@ -162,13 +162,13 @@ const TutorSignup = () => {
 	const onGoogleSignUpSuccess = async () => {
 		toast.success("Google sign-in was successful.");
 		setTimeout(() => {
-			navigate("/tutor-dashboard");
+			navigate("/tutor/dashboard");
 		}, 1500);
 	};
 
 	const resendOtp = async () => {
 		try {
-			const response = await axiosInstance.post("auth/resend-tutor-otp", {
+			const response = await axiosInstance.post("auth/resend-otp", {
 				email: formData.email,
 			});
 			if (response.status === 200) {
@@ -183,7 +183,7 @@ const TutorSignup = () => {
 	};
 
 	const toTutorSignIn = () => {
-		navigate("/tutor-signin");
+		navigate("/tutor/signin");
 	};
 
 	return (
@@ -230,6 +230,7 @@ const TutorSignup = () => {
 										onSuccessRedirect={
 											onGoogleSignUpSuccess
 										}
+                              role={"tutor"}
 									/>
 								</div>
 								<div className="flex items-center justify-center text-base font-semibold text-gray-600">
@@ -406,7 +407,6 @@ const TutorSignup = () => {
 				isLoading={isLoadingOtp}
 				onResendOtp={resendOtp}
 			/>
-			<Toaster position="top-left" richColors />
 		</>
 	);
 };
