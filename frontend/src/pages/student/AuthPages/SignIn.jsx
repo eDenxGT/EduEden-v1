@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { PiGraduationCap } from "react-icons/pi";
-import InputField from "../../../components/commonComponents/InputField";
-import Button from "../../../components/commonComponents/Button";
+import InputField from "../../../components/CommonComponents/InputField";
+import Button from "../../../components/CommonComponents/Button";
 import BoyPcImage from "../../../assets/images/authPage/BoyPcImage.png";
 import { FiArrowRight } from "react-icons/fi";
 import { axiosInstance } from "../../../api/axiosConfig";
 import { Link, useNavigate } from "react-router-dom";
 import Spinner from "../../../utils/Spinner/Spinner";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import "react-toastify/dist/ReactToastify.css";
 import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
 import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
+import { useDispatch } from "react-redux";
+import { studentLogin } from "../../../store/slices/studentSlice";
 
 const SignIn = () => {
 	const [formData, setFormData] = useState({
@@ -25,6 +27,8 @@ const SignIn = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isLoadingOtp, setIsLoadingOtp] = useState(false);
 	const navigate = useNavigate();
+
+	const dispatch = useDispatch()
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
@@ -55,7 +59,12 @@ const SignIn = () => {
 		try {
 			const response = await axiosInstance.post("/auth/signin", formData);
 			if (response.status === 200) {
-				navigate("/home");
+				const data = response?.data
+				dispatch(studentLogin(data))
+				setTimeout(() => {
+					navigate("/student/home");
+				}, 1500);
+				
 			}
 		} catch (error) {
 			console.error("SignIn Submit Error:", error);
@@ -64,7 +73,7 @@ const SignIn = () => {
 				"An error occurred during sign-in.";
 			toast.error(errorMessage);
 
-			if (!error?.response?.data?.verified) {
+			if (error?.response?.data?.not_verified) {
 				setOtpModalOpen(true);
 				resendOtp();
 			}
@@ -77,6 +86,7 @@ const SignIn = () => {
 		try {
 			const response = await axiosInstance.post("auth/resend-otp", {
 				email: formData.email,
+				role: "student",
 			});
 			if (response.status === 200) {
 				setTimeout(() => {
@@ -96,13 +106,14 @@ const SignIn = () => {
 			const response = await axiosInstance.post("/auth/verify-otp", {
 				email: formData.email,
 				otp: otpString,
+				role: "student",
 			});
 
 			if (response.status === 200) {
 				toast.success(response?.data?.message);
 				setOtpModalOpen(false);
 				setTimeout(() => {
-					navigate("/home");
+					navigate("/student/home");
 				}, 2000);
 			}
 		} catch (error) {
@@ -117,15 +128,16 @@ const SignIn = () => {
 		setOtpModalOpen(false);
 	};
 
-	const onGoogleSignInSuccess = async () => {
+	const onGoogleSignInSuccess = async (data) => {
+		dispatch(studentLogin({studentData: data.userData, token: data.token}))
 		toast.success("Google sign-in was successful.");
 		setTimeout(() => {
-			navigate("/home");
+			navigate("/student/home");
 		}, 1500);
 	};
 
 	const toSignUp = () => {
-		navigate("/signup");
+		navigate("/student/signup");
 	};
 
 	return (
@@ -169,10 +181,11 @@ const SignIn = () => {
 							<div>
 								<div className="mb-7">
 									<GoogleAuthButton
-										onSuccessRedirect={
-											onGoogleSignInSuccess
+										onSuccessRedirect={(data)=>
+											onGoogleSignInSuccess(data)
 										}
 										role={'student'}
+										// isDarkMode={isDarkMode}
 									/>
 								</div>
 								<div className="flex items-center justify-center text-base font-semibold text-gray-600">
@@ -227,7 +240,7 @@ const SignIn = () => {
 										</span>
 									</label>
 									<Link
-										to="/forgot-password"
+										to="/forgot-password?role=student"
 										className="ml-2 hover:underline-offset-auto hover:underline text-[#ff5722] text-xs">
 										<span>Forgot Password?</span>
 									</Link>
@@ -261,7 +274,6 @@ const SignIn = () => {
 				isLoading={isLoadingOtp}
 				onResendOtp={resendOtp}
 			/>
-			<Toaster position="top-left" richColors />
 		</>
 	);
 };

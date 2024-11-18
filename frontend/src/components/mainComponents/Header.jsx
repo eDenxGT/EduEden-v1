@@ -9,112 +9,131 @@ import {
 	Moon,
 	User,
 	Menu,
-	Users,
-	Settings,
-	ShoppingBag,
-	PlusCircle,
-	BookOpen,
-	LayoutDashboard,
 	LogOut,
-	Home,
-	BookOpenText,
-	MessageCircleMore,
-	Layers,
-	ClipboardList,
-	DollarSign,
 } from "lucide-react";
-import Button from "../commonComponents/Button";
+import Button from "../CommonComponents/Button";
 import { PiGraduationCap } from "react-icons/pi";
 import { useDispatch, useSelector } from "react-redux";
-import { studentChangeTheme } from "../../store/slices/studentSlice";
+import {
+	studentChangeTheme,
+	studentLogout,
+} from "../../store/slices/studentSlice";
 import { FiArrowLeft } from "react-icons/fi";
-import { tutorChangeTheme } from "../../store/slices/tutorSlice";
-import { adminChangeTheme } from "../../store/slices/adminSlice";
-import { FaChalkboardTeacher } from "react-icons/fa";
+import { tutorChangeTheme, tutorLogout } from "../../store/slices/tutorSlice";
+import { adminChangeTheme, adminLogout } from "../../store/slices/adminSlice";
+import NavItem from "./NavItems";
+import SideBarMenu from "../../config/SidebarMenuConfig";
+import { publicChangeTheme } from "../../store/slices/publicSlice";
+import ConfirmationModal from "../../utils/Modals/ConfirmtionModal";
+import { useNavigate } from "react-router-dom";
 
-const Sidebar = ({ items, onClose, handleLogout, isVisible }) => {
-	const [isClicked, setIsClicked] = useState(() => {
-		const savedItem = localStorage.getItem("activeItem");
-		return savedItem ? parseInt(savedItem, 10) : 0;
-	});
+const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
+	const [isConfirmationModalOpen, setIsConfirmationModalOpen] =
+		useState(false);
+	const [activeIndex, setActiveIndex] = useState(
+		() => parseInt(localStorage.getItem("activeItem"), 10) || 0
+	);
+
 	useEffect(() => {
-		localStorage.setItem("activeItem", isClicked);
-	}, [isClicked]);
+		localStorage.setItem("activeItem", activeIndex);
+	}, [activeIndex]);
 
 	const handleLogoutClick = () => {
+		setIsConfirmationModalOpen(true);
+	};
+	const onConfirmModal = () => {
 		handleLogout();
-		localStorage.getItem("activeItem") &&
-			localStorage.removeItem("activeItem");
+		localStorage.removeItem("activeItem");
+		setIsConfirmationModalOpen(false);
 	};
 
-	const handleClick = (itemIndex) => {
-		console.log(itemIndex);
-		setIsClicked(itemIndex);
+	const onSideBarClose = () => {
+		onClose();
+		setIsConfirmationModalOpen(false);
 	};
+
+	const onCloseModal = () => {
+		setIsConfirmationModalOpen(false);
+	};
+
+	const navItems = SideBarMenu[role] || [];
+
 	return (
 		<div
-			onClick={onClose}
-			className={`fixed inset-0 z-50 transition-opacity duration-300 ${
+			onClick={onSideBarClose}
+			className={`fixed inset-0 z-40 transition-opacity duration-300 ${
 				isVisible
 					? "bg-black bg-opacity-50"
 					: "opacity-0 pointer-events-none"
 			}`}>
 			<div
-				className={`absolute top-0 left-0 h-full w-full sm:w-64 transition-transform duration-300 ease-in-out transform ${
+				className={`absolute top-0 left-0 h-full w-full sm:w-64 transform transition-transform duration-300 ${
 					isVisible ? "translate-x-0" : "-translate-x-full"
 				} bg-gray-900`}
 				onClick={(e) => e.stopPropagation()}>
 				<div className="flex flex-col h-full">
-					<div className="px-6 py-4 border-b-[1px] border-gray-700 mb-1 flex justify-between items-center">
+					{/* Header */}
+					<div className="flex justify-between px-6 py-4 border-b border-gray-700">
 						<div className="flex items-center gap-2">
 							<PiGraduationCap className="h-8 w-8 text-[#FF5722]" />
-							<a href="/" className="flex items-center">
-								<span className="text-2xl font-bold text-white">
-									Edu
-									<span className="text-[#FF5722]">Eden</span>
-								</span>
-							</a>
+							<span className="text-2xl font-bold text-white">
+								Edu<span className="text-[#FF5722]">Eden</span>
+							</span>
 						</div>
 						<button
-							onClick={onClose}
+							onClick={onSideBarClose}
 							className="text-white hover:text-[#FF5722] transition-colors">
 							<FiArrowLeft className="h-6 w-6" />
 						</button>
 					</div>
-					<nav className="flex-1 px-3 overflow-y-auto">
+
+					{/* Navigation */}
+					<nav className="flex-1 mt-1 px-3 overflow-y-auto">
 						<div className="space-y-1">
-							{items.map((item, index) => (
-								<a
-									onClick={() => handleClick(index)}
+							{navItems.map((item, index) => (
+								<NavItem
 									key={index}
-									// href={item.href}
-									className={`user-select-none flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-										index === isClicked
-											? "bg-[#FF5722] text-white hover:bg-[#FF5722]/90"
-											: "text-gray-400 hover:bg-gray-800 hover:text-white"
-									}`}>
-									{item.icon}
-									{item.title}
-								</a>
+									item={item}
+									isActive={index === activeIndex}
+									onClick={() => setActiveIndex(index)}
+								/>
 							))}
 						</div>
 					</nav>
-					<div className="mt-auto p-4">
-						<button
-							onClick={handleLogoutClick}
-							className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-							<LogOut className="h-5 w-5" />
-							Sign-out
-						</button>
-					</div>
+
+					{/* Logout */}
+					{role !== "public" && (
+						<div className="mt-auto p-4">
+							<button
+								onClick={() => {
+									handleLogoutClick();
+									localStorage.removeItem("activeItem");
+								}}
+								className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-400 hover:bg-red-600 hover:text-white transition-colors">
+								<LogOut className="h-5 w-5" />
+								Sign-out
+							</button>
+						</div>
+					)}
 				</div>
 			</div>
+			<ConfirmationModal
+				className={"pointer-events-none"}
+				isOpen={isConfirmationModalOpen}
+				onConfirm={onConfirmModal}
+				onClose={onCloseModal}
+				icon="danger"
+				title="Logout"
+				description="Are you sure you want to logout from EduEden?"
+				isDarkMode={toggleTheme}
+			/>
 		</div>
 	);
 };
 
-const Header = ({ role, handleSideBarLogout }) => {
+const Header = ({ role }) => {
 	const dispatch = useDispatch();
+	const navigate = useNavigate()
 
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -123,6 +142,7 @@ const Header = ({ role, handleSideBarLogout }) => {
 	);
 	const tutorToggleTheme = useSelector((state) => state.tutor?.toggleTheme);
 	const adminToggleTheme = useSelector((state) => state.admin?.toggleTheme);
+	const publicToggleTheme = useSelector((state) => state.public?.toggleTheme);
 
 	const tutorAvatar = useSelector((state) => state.tutor?.tutorData?.avatar);
 	const studentAvatar = useSelector(
@@ -145,7 +165,9 @@ const Header = ({ role, handleSideBarLogout }) => {
 			? studentToggleTheme
 			: role === "tutor"
 			? tutorToggleTheme
-			: adminToggleTheme;
+			: role === "admin"
+			? adminToggleTheme
+			: role === "public" && publicToggleTheme;
 
 	const isAuthenticated =
 		role === "student"
@@ -166,137 +188,27 @@ const Header = ({ role, handleSideBarLogout }) => {
 			? dispatch(studentChangeTheme(!toggleTheme))
 			: role === "tutor"
 			? dispatch(tutorChangeTheme(!toggleTheme))
-			: dispatch(adminChangeTheme(!toggleTheme));
+			: role === "admin"
+			? dispatch(adminChangeTheme(!toggleTheme))
+			: role === "public" && dispatch(publicChangeTheme(!toggleTheme));
+	};
+
+	const handleSideBarLogout = () => {
+		if (role === "student") {
+			dispatch(studentLogout());
+			navigate('/student/signin')
+		} else if (role === "tutor") {
+			dispatch(tutorLogout());
+			navigate('/tutor/signin')
+		} else if (role === "admin") {
+			dispatch(adminLogout());
+			navigate('/admin/signin')
+		}
 	};
 
 	const toggleSidebar = () => {
 		setIsSidebarOpen(!isSidebarOpen);
 	};
-
-	const navItems =
-		role === "student"
-			? [
-					{
-						title: "Home",
-						icon: <Home className="h-5 w-5" />,
-						href: "/student/home",
-					},
-					{
-						title: "Courses",
-						icon: <BookOpenText className="h-5 w-5" />,
-						href: "/student/courses",
-					},
-					{
-						title: "Teachers",
-						icon: <FaChalkboardTeacher className="h-5 w-5" />,
-						href: "/student/teachers",
-					},
-					{
-						title: "Chat",
-						icon: <MessageCircleMore className="h-5 w-5" />,
-						href: "/student/chat",
-					},
-					{
-						title: "Wishlist",
-						icon: <Heart className="h-5 w-5" />,
-						href: "/student/wishlist",
-					},
-					{
-						title: "Purchases",
-						icon: <ShoppingBag className="h-5 w-5" />,
-						href: "/student/purchases",
-					},
-					{
-						title: "Settings",
-						icon: <Settings className="h-5 w-5" />,
-						href: "/student/settings",
-					},
-			  ]
-			: role === "tutor"
-			? [
-					{
-						title: "Dashboard",
-						icon: <LayoutDashboard className="h-5 w-5" />,
-						href: "/tutor/dashboard",
-					},
-					{
-						title: "Create New Course",
-						icon: <PlusCircle className="h-5 w-5" />,
-						href: "/tutor/courses/new",
-					},
-					{
-						title: "My Courses",
-						icon: <BookOpen className="h-5 w-5" />,
-						href: "/tutor/my-courses",
-					},
-					{
-						title: "Earning",
-						icon: <DollarSign className="h-5 w-5" />,
-						href: "/tutor/earning",
-					},
-					{
-						title: "Quiz",
-						icon: <ClipboardList className="h-5 w-5" />,
-						href: "/tutor/quiz",
-					},
-					{
-						title: "Message",
-						icon: <MessageCircleMore className="h-5 w-5" />,
-						href: "/tutor/message",
-					},
-					{
-						title: "Settings",
-						icon: <Settings className="h-5 w-5" />,
-						href: "/tutor/settings",
-					},
-			  ]
-			: [
-					{
-						title: "Dashboard",
-						icon: <LayoutDashboard className="h-5 w-5" />,
-						href: "/admin/dashboard",
-					},
-					{
-						title: "Create New Courses",
-						icon: <PlusCircle className="h-5 w-5" />,
-						href: "/admin/courses/new",
-					},
-					{
-						title: "Courses",
-						icon: <BookOpen className="h-5 w-5" />,
-						href: "/admin/courses",
-					},
-					{
-						title: "Create New Category",
-						icon: <PlusCircle className="h-5 w-5" />,
-						href: "/admin/categories/new",
-					},
-					{
-						title: "Categories",
-						icon: <Layers className="h-5 w-5" />,
-						href: "/admin/categories",
-					},
-					{
-						title: "Orders",
-						icon: <ShoppingBag className="h-5 w-5" />,
-						href: "/admin/orders",
-					},
-					{
-						title: "Manage Users",
-						icon: <Users className="h-5 w-5" />,
-						href: "/admin/users",
-					},
-					{
-						title: "Manage Mentors",
-						icon: <Users className="h-5 w-5" />,
-						href: "/admin/mentors",
-					},
-					{
-						title: "Settings",
-						icon: <Settings className="h-5 w-5" />,
-						href: "/admin/settings",
-					},
-			  ];
 
 	return (
 		<>
@@ -359,22 +271,27 @@ const Header = ({ role, handleSideBarLogout }) => {
 									}`}>
 									<Bell className="h-5 w-5" />
 								</button>
-								<button
-									className={`${
-										toggleTheme
-											? "text-gray-400 hover:text-gray-200"
-											: "text-gray-600 hover:text-gray-900"
-									}`}>
-									<Heart className="h-5 w-5" />
-								</button>
-								<button
-									className={`${
-										toggleTheme
-											? "text-gray-400 hover:text-gray-200"
-											: "text-gray-600 hover:text-gray-900"
-									}`}>
-									<ShoppingCart className="h-5 w-5" />
-								</button>
+								{role === "student" ||
+									(role === "public" && (
+										<>
+											<button
+												className={`${
+													toggleTheme
+														? "text-gray-400 hover:text-gray-200"
+														: "text-gray-600 hover:text-gray-900"
+												}`}>
+												<Heart className="h-5 w-5" />
+											</button>
+											<button
+												className={`${
+													toggleTheme
+														? "text-gray-400 hover:text-gray-200"
+														: "text-gray-600 hover:text-gray-900"
+												}`}>
+												<ShoppingCart className="h-5 w-5" />
+											</button>
+										</>
+									))}
 							</div>
 
 							{/* Theme Toggle Button */}
@@ -407,13 +324,13 @@ const Header = ({ role, handleSideBarLogout }) => {
 							{/* Auth Section */}
 							<div className="flex items-center gap-3">
 								{isAuthenticated ? (
-									<div className="flex items-center gap-3">
+									<div className="flex items-center bg-black rounded-full overflow-hidden gap-3">
 										<button>
 											{userAvatar ? (
 												<img
 													src={userAvatar}
 													alt="User Avatar"
-													className="w-6 h-6 rounded-full"
+													className="w-8 h-8 hover:scale-110 transition-transform delay-100 rounded-full"
 												/>
 											) : (
 												<User
@@ -440,13 +357,16 @@ const Header = ({ role, handleSideBarLogout }) => {
 
 			{/* Sidebar */}
 			<Sidebar
-				items={navItems}
+				role={role}
 				isVisible={isSidebarOpen}
 				onClose={toggleSidebar}
 				handleLogout={handleSideBarLogout}
+				toggleTheme={toggleTheme}
 			/>
 		</>
 	);
 };
+
+// const MemoizedHeader = React.memo(Header);
 
 export default Header;

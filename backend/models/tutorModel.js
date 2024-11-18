@@ -25,6 +25,10 @@ const TutorSchema = new mongoose.Schema(
 				return this.google_id ? false : true;
 			},
 		},
+		user_id: {
+			type: String,
+			default: "edueden"+Math.floor(Math.random() * 100000+ 900000),
+		},
 		google_id: {
 			type: String,
 		},
@@ -47,7 +51,7 @@ const TutorSchema = new mongoose.Schema(
 		},
 		is_blocked: {
 			type: Boolean,
-			default: true,
+			default: false,
 		},
 		is_phone_verified: {
 			type: Boolean,
@@ -55,6 +59,9 @@ const TutorSchema = new mongoose.Schema(
 		},
 		social_profiles: {
 			type: Object,
+		},
+		last_login : {
+			type: Date
 		},
 		created_at: {
 			type: Date,

@@ -1,23 +1,24 @@
-import LandingPage from "./pages/LandingPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import OtpVerificationModal from "./utils/Modals/OtpVerificationModal";
-import ForgotPassword from "./pages/user/AuthPages/ForgotPassword";
-import ResetPassword from "./pages/user/AuthPages/ResetPassword";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import ResetPassword from "./pages/Auth/ResetPassword";
 
 import StudentRoutes from "./routes/StudentRoutes";
 import TutorRoutes from "./routes/TutorRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
 import { Toaster } from "sonner";
 import LoadingUi from "./utils/Modals/LoadingUi";
+import ConfirmationModal from "./utils/Modals/ConfirmtionModal";
+import PublicRoutes from "./routes/PublicRoutes";
+import Error404Page from "./pages/Others/Error404Page";
 
 function App() {
 	return (
 		<Router>
-			<Toaster position="top-left" richColors />
+			<Toaster position="top-right" richColors />
 
 			<Routes>
-				<Route path="/loading" element={<LoadingUi />} />
-				<Route path="/" element={<LandingPage />} />
+				<Route path="/" element={<PublicRoutes />} />
 				<Route path="/student/*" element={<StudentRoutes />} />
 				<Route path="/tutor/*" element={<TutorRoutes />} />
 				<Route path="/admin/*" element={<AdminRoutes />} />
@@ -28,6 +29,10 @@ function App() {
 					path="/reset-password/:token"
 					element={<ResetPassword />}
 				/>
+
+				<Route path="/test" element={<ConfirmationModal />} />
+				<Route path="/loading" element={<LoadingUi />} />
+				<Route path="/*" element={<Error404Page />} />
 			</Routes>
 		</Router>
 	);

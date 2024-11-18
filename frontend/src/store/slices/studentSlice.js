@@ -4,7 +4,7 @@ const INITIAL_STATE = {
 	studentData: null,
 	token: null,
 	toggleTheme: false,
-	isAuthenticated: false
+	isAuthenticated: false,
 };
 
 const studentSlice = createSlice({
@@ -14,7 +14,7 @@ const studentSlice = createSlice({
 		studentLogin(state, action) {
 			state.studentData = action.payload.studentData;
 			state.token = action.payload.token;
-			state.isAuthenticated = true
+			state.isAuthenticated = true;			
 		},
 		studentChangeTheme(state, action) {
 			state.toggleTheme = action.payload;
@@ -22,13 +22,14 @@ const studentSlice = createSlice({
 		studentLogout(state) {
 			state.studentData = null;
 			state.token = null;
-			state.isAuthenticated = false
+			state.isAuthenticated = false;
 			localStorage.getItem("activeItem") &&
-			localStorage.removeItem("activeItem");
+				localStorage.removeItem("activeItem");
 		},
 	},
 });
 
-export const {studentChangeTheme, studentLogin, studentLogout} = studentSlice.actions;
+export const { studentChangeTheme, studentLogin, studentLogout } =
+	studentSlice.actions;
 
 export default studentSlice.reducer;

@@ -4,10 +4,12 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const chalk = require("chalk");
 const session = require('express-session')
+const nocache = require('nocache')
 
 dotenv.config();
 
 const authRouter = require('./routes/authRoute')
+const adminRouter = require('./routes/adminRoute')
 
 const app = express();
 app.use(express.json());
@@ -22,8 +24,10 @@ app.use(session({
 	saveUninitialized: false
 }))
 
+app.use(nocache())
 
 app.use('/auth', authRouter)
+app.use('/admin', adminRouter)
 
 
 

@@ -21,6 +21,10 @@ const StudentSchema = new mongoose.Schema(
 			type: String,
 			required: function(){ return this.google_id ? false : true },
 		},
+		user_id: {
+			type: String,
+			default: "edueden"+Math.floor(Math.random() * 100000+ 900000),
+		},
 		google_id: {
 			type: String,
 		},
@@ -51,6 +55,9 @@ const StudentSchema = new mongoose.Schema(
 			type: String
 		},
 		resetTokenExpiry : {
+			type: Date
+		},
+		last_login : {
 			type: Date
 		},
 		created_at: {

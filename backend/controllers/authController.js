@@ -1,6 +1,7 @@
 const UnverifiedUser = require("../models/unverifiedUserModel");
 const Student = require("../models/studentModel");
 const Tutor = require("../models/tutorModel");
+const Admin = require("../models/adminModel");
 
 const jwt = require("jsonwebtoken");
 const { hashPassword, comparePassword } = require("../utils/passwordUtils");
@@ -92,11 +93,19 @@ const studentSignIn = async (req, res) => {
 		if (isUserUnverified) {
 			return res
 				.status(403)
-				.json({ verified: false, message: "Verify your email" });
+				.json({ not_verified: true, message: "Verify your email" });
 		}
 
 		if (!student && !isUserUnverified) {
 			return res.status(400).json({ message: "Account not found" });
+		}
+		if (student.is_blocked) {
+			return res
+				.status(401)
+				.json({
+					message:
+						"Your account has been blocked. Please contact the support team.",
+				});
 		}
 
 		const isMatch = await comparePassword(password, student?.password);
@@ -114,7 +123,7 @@ const studentSignIn = async (req, res) => {
 		res.status(200).json({
 			message: "Student logged in successfully",
 			token,
-			student: studentDetails,
+			studentData: studentDetails,
 		});
 	} catch (error) {
 		console.log("SignIn Error: ", error);
@@ -124,7 +133,7 @@ const studentSignIn = async (req, res) => {
 
 const verifyOtp = async (req, res) => {
 	try {
-		const { email, otp, role } = req.body;
+		const { email, otp } = req.body;
 
 		const unverifiedUser = await UnverifiedUser.findOne({ email });
 
@@ -213,11 +222,21 @@ const resendOtp = async (req, res) => {
 
 const googleAuth = async (req, res) => {
 	const { token, role } = req.body;
+
+	if (!token || !role) {
+		return res.status(400).json({ error: "Token and role are required" });
+	}
+
+	if (!["student", "tutor"].includes(role)) {
+		return res.status(400).json({ error: "Invalid role specified" });
+	}
+
 	try {
 		const client = new OAuth2Client({
 			clientId: process.env.GOOGLE_CLIENT_ID,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
 		});
+
 		const ticket = await client.verifyIdToken({
 			idToken: token,
 			audience: process.env.GOOGLE_CLIENT_ID,
@@ -226,105 +245,114 @@ const googleAuth = async (req, res) => {
 		const payload = ticket.getPayload();
 
 		if (!payload.email_verified) {
+			console.log("Unverified email: ", payload.email);
 			return res.status(401).json({ message: "Email not verified" });
 		}
 
-		let user;
-		if (role === "student") {
-			const isTutorExists = await Tutor.findOne({ email: payload.email });
-			if (isTutorExists) {
-				return res
-					.status(401)
-					.json({ message: "Tutor account already exists" });
-			}
-			user = await Student.findOne({ email: payload.email });
-			if (!user) {
-				user = new Student({
-					full_name: payload.name,
-					email: payload.email,
-					google_id: payload.sub,
-					avatar: payload.picture,
-				});
-				await user.save();
-			} else if (!user.google_id) {
-				user.google_id = payload.sub;
-				if (!user.avatar) {
-					user.avatar = payload.picture;
-				}
-				await user.save();
-			}
-		} else if (role === "tutor") {
-			const isStudentExists = await Student.findOne({
-				email: payload.email,
-			});
+		const { name, email, sub, picture } = payload;
 
-			if (isStudentExists) {
-				return res
-					.status(401)
-					.json({ message: "Student account already exists" });
+		const isOtherRoleExists = await (async () => {
+			if (role === "student") {
+				return await Tutor.findOne({ email });
+			} else if (role === "tutor") {
+				return await Student.findOne({ email });
 			}
-			user = await Tutor.findOne({ email: payload.email });
-			if (!user) {
-				user = new Tutor({
-					full_name: payload.name,
-					email: payload.email,
-					google_id: payload.sub,
-					avatar: payload.picture,
-				});
-				await user.save();
-			} else if (!user.google_id) {
-				user.google_id = payload.sub;
-				if (!user.avatar) {
-					user.avatar = payload.picture;
-				}
-				await user.save();
-			}
+			return false;
+		})();
+
+		if (isOtherRoleExists) {
+			return res.status(401).json({
+				message: `This account is a ${
+					role === "student" ? "Tutor" : "Student"
+				} account.`,
+			});
 		}
 
-		const userToken = jwt.sign(
-			{
-				id: user._id,
-			},
-			JWT_SECRET,
-			{ expiresIn: "1h" }
-		);
+		const User = role === "student" ? Student : Tutor;
 
-		const { password: _, ...userDetails } = user.toObject();
+		let user = await User.findOne({ email });
+
+		if (user && user.is_blocked) {
+			return res
+				.status(401)
+				.json({
+					message:
+						"Your account has been blocked. Please contact the support team.",
+				});
+		}
+
+		if (!user) {
+			user = new User({
+				full_name: name,
+				email,
+				google_id: sub,
+				avatar: picture,
+			});
+		} else if (!user.google_id) {
+			user.google_id = sub;
+			if (!user.avatar) {
+				user.avatar = picture;
+			}
+		}
+		await user.save();
+
+		const userToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+			expiresIn: "1d",
+		});
+
+		const { password, ...userDetails } = user.toObject();
 
 		return res
 			.status(200)
 			.json({ token: userToken, userData: userDetails });
 	} catch (error) {
-		res.status(401).json({ message: error.message });
-		console.log("Google Auth Error: ", error);
+		console.error("Google Auth Error: ", error.stack || error);
+		res.status(500).json({
+			message: "Internal server error. Please try again.",
+		});
 	}
 };
 
 const forgotPassword = async (req, res) => {
 	try {
-		const { email } = req.body;
-		console.log(email);
+		const { email, role } = req.body;
+		console.log(req.body);
+		
+		let user; 
 
-		const student = await Student.findOne({ email });
-		if (!student) {
-			return res.status(404).json({ message: "User not found." });
+		if (role === "student") {
+			user = await Student.findOne({ email }); 
+			if (!user) {
+				return res.status(404).json({ message: "User not found." });
+			}
+		} else if (role === "tutor") {
+			user = await Tutor.findOne({ email }); 
+			if (!user) {
+				return res.status(404).json({ message: "User not found." });
+			}
+		} else {
+			return res.status(400).json({ error: "No roles Found." });
 		}
-		const token = jwt.sign({ id: student._id }, JWT_SECRET, {
+
+		const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
 			expiresIn: "15m",
 		});
-		student.resetToken = token;
-		student.resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
 
-		await student.save();
+		user.resetToken = token;
+		user.resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
 
-		const link = `${FRONTEND_URL}/reset-password/${token}?name=${student.full_name}`;
+		await user.save();
+
+		const link = `${process.env.FRONTEND_URL}/reset-password/${token}?name=${encodeURIComponent(user.full_name)}`;
 		await sendPasswordResetEmail(email, link);
+
 		return res.status(200).json({ message: "Email sent successfully." });
 	} catch (error) {
-		console.log("Forgot Password Error: ", error);
+		console.error("Forgot Password Error: ", error);
 		return res.status(500).json({ message: "Something went wrong." });
 	}
 };
+
 
 const resetPassword = async (req, res) => {
 	try {
@@ -441,7 +469,15 @@ const tutorSignIn = async (req, res) => {
 		if (isUserUnverified) {
 			return res
 				.status(403)
-				.json({ verified: false, message: "Verify your email" });
+				.json({ not_verified: true, message: "Verify your email" });
+		}
+		if (tutor.is_blocked) {
+			return res
+				.status(401)
+				.json({
+					message:
+						"Your account has been blocked. Please contact the support team.",
+				});
 		}
 
 		if (!tutor && !isUserUnverified) {
@@ -463,7 +499,7 @@ const tutorSignIn = async (req, res) => {
 		res.status(200).json({
 			message: "Tutor logged in successfully",
 			token,
-			tutor: tutorDetails,
+			tutorData: tutorDetails,
 		});
 	} catch (error) {
 		console.log("SignIn Error: ", error);
@@ -471,6 +507,38 @@ const tutorSignIn = async (req, res) => {
 	}
 };
 
+const adminSignIn = async (req, res) => {
+	const { email, password } = req.body;
+	try {
+		const admin = await Admin.findOne({
+			$or: [{ email }, { user_name: email }],
+		});
+		if (!admin) {
+			return res.status(400).json({ message: "Account not found" });
+		}
+
+		const isMatch = await comparePassword(password, admin?.password);
+
+		if (!isMatch) {
+			return res.status(400).json({ message: "Incorrect Password" });
+		}
+
+		const token = jwt.sign({ id: admin._id }, JWT_SECRET, {
+			expiresIn: "1d",
+		});
+
+		const { password: _, ...adminDetails } = admin.toObject();
+
+		res.status(200).json({
+			message: "Admin logged in successfully",
+			token,
+			adminData: adminDetails,
+		});
+	} catch (error) {
+		console.log("Admin Sign In Error: ", error);
+		res.status(500).json({ message: "Internal server error" });
+	}
+};
 
 module.exports = {
 	studentSignIn,
@@ -481,5 +549,6 @@ module.exports = {
 	forgotPassword,
 	resetPassword,
 	tutorSignUp,
-	tutorSignIn
+	tutorSignIn,
+	adminSignIn,
 };

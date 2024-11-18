@@ -5,17 +5,19 @@ import { persistReducer } from "redux-persist";
 import studentReducer from "./slices/studentSlice";
 import tutorReducer from "./slices/tutorSlice";
 import adminReducer from './slices/adminSlice'
+import publicReducer from './slices/publicSlice'
 
 const persistConfig = {
 	key: "root",
 	storage,
-	whitelist: ["student", "tutor", "admin"],
+	whitelist: ["student", "tutor", "admin", "public"],
 };
 
 const rootReducer = combineReducers({
 	student: studentReducer,
 	tutor: tutorReducer,
-	admin: adminReducer
+	admin: adminReducer,
+	public: publicReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

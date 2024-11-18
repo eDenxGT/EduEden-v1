@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { PiGraduationCap } from "react-icons/pi";
-import InputField from "../../../components/commonComponents/InputField";
-import Button from "../../../components/commonComponents/Button";
+import InputField from "../../components/CommonComponents/InputField";
+import Button from "../../components/CommonComponents/Button";
 import { FiArrowRight, FiArrowLeft } from "react-icons/fi";
-import { axiosInstance } from "../../../api/axiosConfig";
-import { Link } from "react-router-dom";
-import Spinner from "../../../utils/Spinner/Spinner";
+import { axiosInstance } from "../../api/axiosConfig";
+import { Link, useLocation } from "react-router-dom";
+import Spinner from "../../utils/Spinner/Spinner";
 import { Toaster, toast } from "sonner";
-import ForgotPassImage from "../../../assets/images/authPage/ForgotPassImage.png";
+import ForgotPassImage from "../../assets/images/authPage/ForgotPassImage.png";
 
 const ForgotPassword = () => {
+	const location = useLocation()
 	const [email, setEmail] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");

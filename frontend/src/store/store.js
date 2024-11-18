@@ -9,6 +9,7 @@ const store = configureStore({
 			serializableCheck: false,
 		}),
 });
+
 const persistor = persistStore(store);
 
 export { store, persistor };

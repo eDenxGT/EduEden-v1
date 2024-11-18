@@ -1,8 +1,8 @@
 import { useState } from "react";
 import GirlRocket from "../../../assets/images/authPage/RocketGirlImage.png";
 import { PiGraduationCap } from "react-icons/pi";
-import InputField from "../../../components/commonComponents/InputField";
-import Button from "../../../components/commonComponents/Button";
+import InputField from "../../../components/CommonComponents/InputField";
+import Button from "../../../components/CommonComponents/Button";
 import { axiosInstance } from "../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../../../utils/Spinner/Spinner";
@@ -10,6 +10,7 @@ import { FiArrowRight } from "react-icons/fi";
 import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
 import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
 import { toast } from "sonner";
+import { useSelector } from "react-redux";
 
 const SignUp = () => {
 	const [formData, setFormData] = useState({
@@ -37,6 +38,8 @@ const SignUp = () => {
 	const [isFormValid, setIsFormValid] = useState(false);
 	const [otpModalOpen, setOtpModalOpen] = useState(false);
 	const navigate = useNavigate();
+	const isDarkMode = useSelector((state) => state.student.toggleTheme);
+
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
@@ -134,8 +137,8 @@ const SignUp = () => {
 				toast.success(response?.data?.message);
 				setOtpModalOpen(false);
 				setTimeout(() => {
-					navigate("/signin");
-				}, 2000);
+					navigate("/student/signin");
+				}, 1500);
 			}
 		} catch (error) {
 			toast.error(error?.response?.data?.message);
@@ -169,11 +172,12 @@ const SignUp = () => {
 	};
 
 	const toSignIn = () => {
-		navigate("/signin");
+		navigate("/student/signin");
 	};
 
 	return (
 		<>
+
 			<div className="flex justify-around items-center p-4 border-b border-gray-200">
 				<div className="flex items-center">
 					<PiGraduationCap className="h-6 w-6 text-[#ff5722]" />
@@ -217,6 +221,7 @@ const SignUp = () => {
 											onGoogleSignUpSuccess
 										}
 										role={'student'}
+										isDarkMode={isDarkMode}
 									/>
 								</div>
 								<div className="flex items-center justify-center text-base font-semibold text-gray-600">

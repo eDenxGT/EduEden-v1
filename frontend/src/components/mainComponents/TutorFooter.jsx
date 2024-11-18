@@ -3,17 +3,10 @@ import { useSelector } from "react-redux";
 // eslint-disable-next-line react/prop-types
 const TutorFooter = ({ role }) => {
 	const currentYear = new Date().getFullYear();
-	const studentToggleTheme = useSelector((state) => state.student?.toggleTheme);
-	const tutorToggleTheme = useSelector((state) => state.tutor?.toggleTheme);
-	const adminToggleTheme = useSelector((state) => state.admin?.toggleTheme);
+	const tutorToggleTheme = useSelector((state) => state.tutor.toggleTheme);
+	const adminToggleTheme = useSelector((state) => state.admin.toggleTheme);
 
-	const toggleTheme =
-		role === "student"
-			? studentToggleTheme
-			: role === "tutor"
-			? tutorToggleTheme
-			: adminToggleTheme;
-
+	const toggleTheme = role === "tutor" ? tutorToggleTheme : adminToggleTheme;
 
 	return (
 		<footer

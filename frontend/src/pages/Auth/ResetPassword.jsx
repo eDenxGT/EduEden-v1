@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { PiGraduationCap } from "react-icons/pi";
-import InputField from "../../../components/commonComponents/InputField";
-import Button from "../../../components/commonComponents/Button";
+import InputField from "../../components/CommonComponents/InputField";
+import Button from "../../components/CommonComponents/Button";
 import { FiArrowRight, FiArrowLeft } from "react-icons/fi";
-import { axiosInstance } from "../../../api/axiosConfig";
+import { axiosInstance } from "../../api/axiosConfig";
 import {
 	useNavigate,
 	Link,
 	useParams,
 	useSearchParams,
 } from "react-router-dom";
-import Spinner from "../../../utils/Spinner/Spinner";
+import Spinner from "../../utils/Spinner/Spinner";
 import { Toaster, toast } from "sonner";
-import ResetPasswordImage from "../../../assets/images/authPage/ResetPassImage.png";
+import ResetPasswordImage from "../../assets/images/authPage/ResetPassImage.png";
 
 const ResetPassword = () => {
 	const [newPassword, setNewPassword] = useState("");

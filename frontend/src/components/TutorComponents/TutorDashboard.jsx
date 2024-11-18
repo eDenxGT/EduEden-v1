@@ -11,9 +11,7 @@ import {
 	ArrowRight,
    UserCircle2Icon,
 } from "lucide-react";
-import Header from "../../components/mainComponents/Header";
-import Button from "../../components/commonComponents/Button";
-import TutorFooter from "../../components/mainComponents/TutorFooter";
+import Button from "../../components/CommonComponents/Button";
 
 // eslint-disable-next-line react/prop-types
 const QuickStatCard = ({ icon, title, value, isDarkMode }) => (
@@ -84,8 +82,6 @@ export default function TutorDashboard() {
 					: "bg-gradient-to-b from-gray-50 to-gray-100 text-gray-800"
 			}`}>
 			<Toaster theme={isDarkMode ? "dark" : "light"} />
-			<Header role={"tutor"} />
-
 			<div className="flex">
 				<main className="flex-1 p-6 max-w-7xl mx-auto w-full">
 					<div
@@ -629,7 +625,6 @@ export default function TutorDashboard() {
 					</div>
 				</main>
 			</div>
-			<TutorFooter role="tutor" />
 		</div>
 	);
 }

@@ -1,4 +1,3 @@
-import React from "react";
 import { PiGraduationCap } from "react-icons/pi";
 import {
 	FaInstagram,

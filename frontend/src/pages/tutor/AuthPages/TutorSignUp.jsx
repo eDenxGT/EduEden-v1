@@ -1,8 +1,8 @@
 import { useState } from "react";
 import TutorImage from "../../../assets/images/authPage/RocketGirlImage.png";
 import { PiGraduationCap } from "react-icons/pi";
-import InputField from "../../../components/commonComponents/InputField";
-import Button from "../../../components/commonComponents/Button";
+import InputField from "../../../components/CommonComponents/InputField";
+import Button from "../../../components/CommonComponents/Button";
 import { axiosInstance } from "../../../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../../../utils/Spinner/Spinner";
@@ -148,7 +148,7 @@ const TutorSignup = () => {
 				toast.success(response?.data?.message);
 				setOtpModalOpen(false);
 				setTimeout(() => {
-					navigate("/tutor-dashboard");
+					navigate("/tutor/signin");
 				}, 2000);
 			}
 		} catch (error) {

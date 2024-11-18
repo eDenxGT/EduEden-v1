@@ -1,13 +1,45 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const AdminSchema = new mongoose.Schema({
-  full_name: { type: String, required: true },
-  user_name: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  phone: { type: Number, required: true, unique: true },
-  password: { type: String, required: true },
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now },
-}, { collection: 'admins' });  // specify collection name
+const adminSchema = new mongoose.Schema(
+  {
+    full_name: {
+      type: String,
+      required: true,
+    },
+    user_name: {
+      type: String,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+		phone: {
+			type: Number,
+			required: function(){ return this.google_id ? false : true },
+		},
+		password: {
+			type: String,
+			required: function(){ return this.google_id ? false : true },
+		},
+    google_id: {
+      type: String,
+    },
+    last_login : {
+			type: Date
+		},
+    created_at: {
+      type: Date,
+      default: Date.now,
+    },
+    updated_at: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    timestamps: true, 
+    collection: "admins",
+  }
+);
 
-module.exports = mongoose.model('Admin', AdminSchema);
+module.exports = mongoose.model("Admin", adminSchema);

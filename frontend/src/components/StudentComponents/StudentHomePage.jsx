@@ -15,10 +15,8 @@ import {
 } from "lucide-react";
 import { IoIosGitBranch } from "react-icons/io";
 import { TbCertificate } from "react-icons/tb";
-import Header from "../../components/mainComponents/Header";
-import Card from "../../components/commonComponents/Card";
-import Button from "../../components/commonComponents/Button";
-import Footer from "../../components/mainComponents/Footer";
+import Card from "../../components/CommonComponents/Card";
+import Button from "../../components/CommonComponents/Button";
 
 import BrototypeLogo from "../../assets/images/landingPage/platforms/brototype_logo.png";
 import OpenAi from "../../assets/images/landingPage/platforms/openai-removebg-preview.png";
@@ -38,6 +36,7 @@ import { useSelector } from "react-redux";
 
 export default function StudentHomePage() {
 	const isDarkMode = useSelector((state) => state.student.toggleTheme);
+	const studentData = useSelector(state=>state.student.studentData)
 
 	return (
 		<div
@@ -46,11 +45,9 @@ export default function StudentHomePage() {
 					? "dark bg-gray-900"
 					: "bg-gradient-to-b from-gray-100 to-gray-200"
 			}`}>
-			<Header />
 
 			<section
 				className={`
-				mt-16
 				${
 					isDarkMode
 						? "bg-gray-800"
@@ -62,7 +59,7 @@ export default function StudentHomePage() {
 							className={`text-4xl font-bold mb-3 ${
 								isDarkMode ? "text-white" : "text-gray-800"
 							} animate-fade-in`}>
-							Welcome back, Student!
+							Welcome back, {studentData ? studentData?.full_name : "Student"}!
 						</h1>
 						<p
 							className={`text-xl ${
@@ -486,7 +483,6 @@ export default function StudentHomePage() {
 				</div>
 			</section>
 
-			<Footer />
 		</div>
 	);
 }

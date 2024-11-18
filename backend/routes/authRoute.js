@@ -10,7 +10,8 @@ const {
 	forgotPassword,
 	resetPassword,
 	tutorSignUp,
-	tutorSignIn
+	tutorSignIn,
+	adminSignIn
 } = require("../controllers/authController");
 
 authRouter
@@ -21,10 +22,10 @@ authRouter
 	.post("/google", googleAuth)
 	.post("/forgot-password", forgotPassword)
 	.post("/reset-password/:token", resetPassword)
-	
+
 	.post("/tutor/signin", tutorSignIn)
 	.post("/tutor/signup", tutorSignUp)
 
-// .post("/admin/signin", adminSignIn);
+	.post("/admin/signin", adminSignIn);
 
 module.exports = authRouter;
