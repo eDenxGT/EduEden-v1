@@ -3,37 +3,36 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const chalk = require("chalk");
-const session = require('express-session')
-const nocache = require('nocache')
+const session = require("express-session");
+const nocache = require("nocache");
 
 dotenv.config();
 
-const authRouter = require('./routes/authRoute')
-const adminRouter = require('./routes/adminRoute')
+const authRouter = require("./routes/authRoute");
+const adminRouter = require("./routes/adminRoute");
 
 const app = express();
 app.use(express.json());
-app.use(cors({
-	origin: process.env.CLIENT_URL,
-	credentials: true
-}));
+app.use(nocache());
+app.use(express.urlencoded({ extended: true }));
+app.use(
+	cors({
+		origin: process.env.CLIENT_URL,
+		credentials: true,
+	})
+);
 
-app.use(session({
-	secret: process.env.JWT_SECRET,
-	resave: false,
-	saveUninitialized: false
-}))
-
-app.use(nocache())
-
-app.use('/auth', authRouter)
-app.use('/admin', adminRouter)
-
-
-
+app.use(
+	session({
+		secret: process.env.JWT_SECRET,
+		resave: false,
+		saveUninitialized: false,
+	})
+);
 
 
-
+app.use("/auth", authRouter);
+app.use("/admin", adminRouter);
 
 mongoose
 	.connect(process.env.MONGO_URI)

@@ -6,7 +6,6 @@ import { axiosInstance } from "../../api/axiosConfig";
 const GoogleAuthButton = ({ onSuccessRedirect, role, isDarkMode }) => {
 	const handleGoogleSuccess = async (response) => {
 		try {
-			// eslint-disable-next-line no-unused-vars
 			const res = await axiosInstance.post("/auth/google", {
 				token: response.credential,
 				role,

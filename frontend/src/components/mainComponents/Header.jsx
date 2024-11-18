@@ -25,7 +25,7 @@ import NavItem from "./NavItems";
 import SideBarMenu from "../../config/SidebarMenuConfig";
 import { publicChangeTheme } from "../../store/slices/publicSlice";
 import ConfirmationModal from "../../utils/Modals/ConfirmtionModal";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
 	const [isConfirmationModalOpen, setIsConfirmationModalOpen] =
@@ -133,7 +133,7 @@ const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
 
 const Header = ({ role }) => {
 	const dispatch = useDispatch();
-	const navigate = useNavigate()
+	const navigate = useNavigate();
 
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -196,13 +196,13 @@ const Header = ({ role }) => {
 	const handleSideBarLogout = () => {
 		if (role === "student") {
 			dispatch(studentLogout());
-			navigate('/student/signin')
+			navigate("/student/signin");
 		} else if (role === "tutor") {
 			dispatch(tutorLogout());
-			navigate('/tutor/signin')
+			navigate("/tutor/signin");
 		} else if (role === "admin") {
 			dispatch(adminLogout());
-			navigate('/admin/signin')
+			navigate("/admin/signin");
 		}
 	};
 
@@ -344,7 +344,9 @@ const Header = ({ role }) => {
 										</button>
 									</div>
 								) : (
-									<Button href="/login">Sign In</Button>
+									<Link to="/student/signup">
+										<Button className={`bg-[#ff662e]`}>Create Account</Button>
+									</Link>
 								)}
 							</div>
 						</div>
@@ -352,7 +354,7 @@ const Header = ({ role }) => {
 				</div>
 			</header>
 
-			{/* Add a spacer div to push content below the fixed header */}
+			{/* spacer div dummy */}
 			<div className="h-16"></div>
 
 			{/* Sidebar */}

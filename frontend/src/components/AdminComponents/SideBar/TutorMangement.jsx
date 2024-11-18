@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import { axiosInstance } from "../../../api/axiosConfig";
 import { toast } from "sonner";
 import { debounce } from "lodash";
+import { UserCircle2 } from "lucide-react";
 
 
 const TutorManagement = () => {
@@ -169,7 +170,6 @@ const TutorManagement = () => {
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-gray-200">
-              {console.log("RERENDERS")}
 								{currentTutors.map((tutor) => (
 									<tr
 										key={tutor.user_id}
@@ -181,11 +181,11 @@ const TutorManagement = () => {
 										<td className="px-6 py-4 whitespace-nowrap">
 											<div className="flex items-center">
 												<div className="flex-shrink-0 h-10 w-10">
-													<img
+													{tutor.avatar ? <img
 														className="h-10 w-10 rounded-full"
 														src={tutor.avatar}
 														alt=""
-													/>
+													/> : <UserCircle2 className="w-full h-full" /> }
 												</div>
 												<div className="ml-4">
 													<div className="text-sm font-medium">

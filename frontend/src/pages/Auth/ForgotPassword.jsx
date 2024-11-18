@@ -4,13 +4,15 @@ import InputField from "../../components/CommonComponents/InputField";
 import Button from "../../components/CommonComponents/Button";
 import { FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { axiosInstance } from "../../api/axiosConfig";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Spinner from "../../utils/Spinner/Spinner";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import ForgotPassImage from "../../assets/images/authPage/ForgotPassImage.png";
 
 const ForgotPassword = () => {
-	const location = useLocation()
+	const [searchParams] = useSearchParams();
+	const role = searchParams.get("role") || "student";
+
 	const [email, setEmail] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -32,6 +34,7 @@ const ForgotPassword = () => {
 		try {
 			const response = await axiosInstance.post("/auth/forgot-password", {
 				email,
+				role,
 			});
 			if (response.status === 200) {
 				toast.success(response.data.message);
@@ -113,7 +116,9 @@ const ForgotPassword = () => {
 									)}
 								</Button>
 
-								<Link to="/signin" className="mt-5 text-center">
+								<Link
+									to={`/${role}/signin`}
+									className="mt-5 text-center">
 									<span className="flex items-center gap-2 text-[#ff5722] font-medium  hover:underline">
 										<FiArrowLeft className="w-4 h-4" />{" "}
 										<span>Back to Sign In</span>
@@ -124,7 +129,6 @@ const ForgotPassword = () => {
 					</div>
 				</div>
 			</div>
-			<Toaster position="top-left" richColors />
 		</>
 	);
 };

@@ -100,12 +100,10 @@ const studentSignIn = async (req, res) => {
 			return res.status(400).json({ message: "Account not found" });
 		}
 		if (student.is_blocked) {
-			return res
-				.status(401)
-				.json({
-					message:
-						"Your account has been blocked. Please contact the support team.",
-				});
+			return res.status(401).json({
+				message:
+					"Your account has been blocked. Please contact the support team.",
+			});
 		}
 
 		const isMatch = await comparePassword(password, student?.password);
@@ -273,12 +271,10 @@ const googleAuth = async (req, res) => {
 		let user = await User.findOne({ email });
 
 		if (user && user.is_blocked) {
-			return res
-				.status(401)
-				.json({
-					message:
-						"Your account has been blocked. Please contact the support team.",
-				});
+			return res.status(401).json({
+				message:
+					"Your account has been blocked. Please contact the support team.",
+			});
 		}
 
 		if (!user) {
@@ -317,16 +313,16 @@ const forgotPassword = async (req, res) => {
 	try {
 		const { email, role } = req.body;
 		console.log(req.body);
-		
-		let user; 
+
+		let user;
 
 		if (role === "student") {
-			user = await Student.findOne({ email }); 
+			user = await Student.findOne({ email });
 			if (!user) {
 				return res.status(404).json({ message: "User not found." });
 			}
 		} else if (role === "tutor") {
-			user = await Tutor.findOne({ email }); 
+			user = await Tutor.findOne({ email });
 			if (!user) {
 				return res.status(404).json({ message: "User not found." });
 			}
@@ -342,8 +338,9 @@ const forgotPassword = async (req, res) => {
 		user.resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
 
 		await user.save();
+		console.log("ROLE: ", role);
 
-		const link = `${process.env.FRONTEND_URL}/reset-password/${token}?name=${encodeURIComponent(user.full_name)}`;
+		const link = `${FRONTEND_URL}/reset-password/${token}?name=${user.full_name}&role=${role}`;
 		await sendPasswordResetEmail(email, link);
 
 		return res.status(200).json({ message: "Email sent successfully." });
@@ -353,28 +350,36 @@ const forgotPassword = async (req, res) => {
 	}
 };
 
-
 const resetPassword = async (req, res) => {
 	try {
 		const { token } = req.params;
+		const role = req.query.role;
 		const { newPassword, confirmPassword } = req.body;
-		console.log(newPassword, confirmPassword);
+		console.log(newPassword, req.query);
 		if (newPassword !== confirmPassword) {
 			return res.status(400).json({ message: "Password does not match" });
 		}
+		let user;
 
-		const student = await Student.findOne({
-			resetToken: token,
-			resetTokenExpiry: { $gt: Date.now() },
-		});
-		if (!student) {
+		if (role === "student") {
+			user = await Student.findOne({
+				resetToken: token,
+				resetTokenExpiry: { $gt: Date.now() },
+			});
+		} else if (role === "tutor") {
+			user = await Tutor.findOne({
+				resetToken: token,
+				resetTokenExpiry: { $gt: Date.now() },
+			});
+		}
+		if (!user) {
 			return res
 				.status(400)
 				.json({ message: "Invalid or expired token." });
 		}
 		const oldPassword = await comparePassword(
 			newPassword,
-			student?.password || ""
+			user?.password || ""
 		);
 		if (oldPassword) {
 			return res
@@ -384,10 +389,10 @@ const resetPassword = async (req, res) => {
 
 		const hashedPassword = await hashPassword(newPassword);
 
-		student.password = hashedPassword;
-		student.resetToken = undefined;
-		student.resetTokenExpiry = undefined;
-		await student.save();
+		user.password = hashedPassword;
+		user.resetToken = undefined;
+		user.resetTokenExpiry = undefined;
+		await user.save();
 		return res
 			.status(200)
 			.json({ message: "Password reset successfully." });
@@ -396,10 +401,10 @@ const resetPassword = async (req, res) => {
 		console.log("Reset password Error: ", error);
 	}
 };
+
 const tutorSignUp = async (req, res) => {
 	try {
-		const { full_name, user_name, email, phone, password, job_title, bio } =
-			req.body;
+		const { full_name, user_name, email, phone, password } = req.body;
 
 		const isUserVerified = await Tutor.findOne({
 			$or: [{ email }, { user_name }, { phone }],
@@ -472,12 +477,10 @@ const tutorSignIn = async (req, res) => {
 				.json({ not_verified: true, message: "Verify your email" });
 		}
 		if (tutor.is_blocked) {
-			return res
-				.status(401)
-				.json({
-					message:
-						"Your account has been blocked. Please contact the support team.",
-				});
+			return res.status(401).json({
+				message:
+					"Your account has been blocked. Please contact the support team.",
+			});
 		}
 
 		if (!tutor && !isUserUnverified) {

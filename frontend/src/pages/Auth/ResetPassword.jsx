@@ -11,7 +11,7 @@ import {
 	useSearchParams,
 } from "react-router-dom";
 import Spinner from "../../utils/Spinner/Spinner";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import ResetPasswordImage from "../../assets/images/authPage/ResetPassImage.png";
 
 const ResetPassword = () => {
@@ -23,6 +23,7 @@ const ResetPassword = () => {
 	const [errors, setErrors] = useState({});
 	const [searchParams] = useSearchParams();
 	const username = searchParams.get("name") || "User";
+	const role = searchParams.get("role") || "student";
 	const navigate = useNavigate();
 	const { token } = useParams();
 
@@ -40,16 +41,16 @@ const ResetPassword = () => {
 
 		try {
 			const response = await axiosInstance.post(
-				`/auth/reset-password/${token}`,
+				`/auth/reset-password/${token}?role=${role}`,
 				{
 					newPassword,
 					confirmPassword,
 				}
 			);
 			if (response.status === 200) {
-				toast.success(response.data.message);
+				toast.success(response?.data?.message);
 				setTimeout(() => {
-					navigate("/signin");
+					navigate(`/${role}/signin`);
 				}, 1500);
 			}
 		} catch (error) {
@@ -195,7 +196,9 @@ const ResetPassword = () => {
 									)}
 								</Button>
 
-								<Link to="/signin" className="mt-4 text-center">
+								<Link
+									to={`/${role}/signin`}
+									className="mt-4 text-center">
 									<span className="flex items-center gap-2 text-[#ff5722] font-medium hover:underline justify-center">
 										<FiArrowLeft className="w-4 h-4" />
 										<span>Back to Sign In</span>
@@ -206,7 +209,6 @@ const ResetPassword = () => {
 					</div>
 				</div>
 			</div>
-			<Toaster position="top-left" richColors />
 		</div>
 	);
 };

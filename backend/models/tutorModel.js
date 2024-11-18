@@ -60,6 +60,12 @@ const TutorSchema = new mongoose.Schema(
 		social_profiles: {
 			type: Object,
 		},
+		resetToken : {
+			type: String
+		},
+		resetTokenExpiry : {
+			type: Date
+		},
 		last_login : {
 			type: Date
 		},

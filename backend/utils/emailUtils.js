@@ -92,6 +92,8 @@ const sendWelcomeMail = async (email) => {
 };
 
 const sendPasswordResetEmail = async (email, resetLink) => {
+    console.log(resetLink);
+    
 	const htmlContent = `
 <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333; background: #fff;">
     <div style="text-align: center; margin-bottom: 30px; position: relative;">
@@ -122,7 +124,7 @@ const sendPasswordResetEmail = async (email, resetLink) => {
                 Click the button below to securely reset your password:
             </p>
             
-            <a href="#" style="background-color: #FF5722; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 500; display: inline-block; margin: 10px 0; font-size: 16px; box-shadow: 0 2px 4px rgba(255, 87, 34, 0.2); transition: all 0.3s ease;">
+            <a href="${resetLink}" style="background-color: #FF5722; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 500; display: inline-block; margin: 10px 0; font-size: 16px; box-shadow: 0 2px 4px rgba(255, 87, 34, 0.2); transition: all 0.3s ease;">
                 Reset Password 🔐
             </a>
 
