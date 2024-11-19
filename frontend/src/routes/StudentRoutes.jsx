@@ -5,6 +5,7 @@ import StudentHomePage from "../components/StudentComponents/StudentHomePage";
 import StudentLayout from "../pages/student/StudentLayout";
 import PublicRoute from "../utils/ProtectRoutes/PublicRoute";
 import PrivateRoute from "../utils/ProtectRoutes/PrivateRoute";
+import Error404Page from "../pages/Others/Error404Page";
 
 const StudentRoutes = () => {
 	return (
@@ -38,6 +39,9 @@ const StudentRoutes = () => {
 					}>
 					<Route path="home" element={<StudentHomePage />} />
 				</Route>
+
+				<Route path="/*" element={<Error404Page />} />
+
 			</Routes>
 		</>
 	);

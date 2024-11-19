@@ -5,6 +5,7 @@ import TutorDashboard from "../components/TutorComponents/TutorDashboard";
 import TutorLayout from "../pages/tutor/TutorLayout";
 import PublicRoute from "../utils/ProtectRoutes/PublicRoute";
 import PrivateRoute from "../utils/ProtectRoutes/PrivateRoute";
+import Error404Page from "../pages/Others/Error404Page";
 
 const TutorRoutes = () => {
 	return (
@@ -35,6 +36,8 @@ const TutorRoutes = () => {
 					}>
 					<Route path="dashboard" element={<TutorDashboard />} />
 				</Route>
+				<Route path="/*" element={<Error404Page />} />
+
 			</Routes>
 		</>
 	);

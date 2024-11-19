@@ -1,8 +1,10 @@
+//* ====== Import Required Models ====== *//
 const UnverifiedUser = require("../models/unverifiedUserModel");
 const Student = require("../models/studentModel");
 const Tutor = require("../models/tutorModel");
 const Admin = require("../models/adminModel");
 
+//* ====== Import Modules and Functions ====== *//
 const jwt = require("jsonwebtoken");
 const { hashPassword, comparePassword } = require("../utils/passwordUtils");
 const bcrypt = require("bcryptjs");
@@ -338,9 +340,8 @@ const forgotPassword = async (req, res) => {
 		user.resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
 
 		await user.save();
-		console.log("ROLE: ", role);
 
-		const link = `${FRONTEND_URL}/reset-password/${token}?name=${user.full_name}&role=${role}`;
+		const link = `${FRONTEND_URL}/reset-password/${token}?name=${encodeURIComponent(user.full_name)}&role=${role}`;
 		await sendPasswordResetEmail(email, link);
 
 		return res.status(200).json({ message: "Email sent successfully." });

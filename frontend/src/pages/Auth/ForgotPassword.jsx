@@ -8,6 +8,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import Spinner from "../../utils/Spinner/Spinner";
 import { toast } from "sonner";
 import ForgotPassImage from "../../assets/images/authPage/ForgotPassImage.png";
+import { AlertTriangle } from "lucide-react";
 
 const ForgotPassword = () => {
 	const [searchParams] = useSearchParams();
@@ -99,6 +100,7 @@ const ForgotPassword = () => {
 									/>
 									{error && (
 										<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem]">
+											<AlertTriangle className="h-4 w-4 mr-1" />
 											{error}
 										</span>
 									)}

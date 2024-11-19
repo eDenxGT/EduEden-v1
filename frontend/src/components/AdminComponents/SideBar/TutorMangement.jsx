@@ -3,8 +3,6 @@ import Card from "../../../components/CommonComponents/Card";
 import {
 	FaEnvelope,
 	FaPhone,
-	FaCheck,
-	FaBan,
 	FaChevronLeft,
 	FaChevronRight,
 } from "react-icons/fa";
@@ -237,11 +235,6 @@ const TutorManagement = () => {
 														? "bg-green-100 text-green-800 hover:bg-green-200"
 														: "bg-red-100 text-red-800 hover:bg-red-200"
 												}`}>
-												{!tutor.is_blocked ? (
-													<FaBan className="mr-2" />
-												) : (
-													<FaCheck className="mr-2" />
-												)}
 												{!tutor.is_blocked
 													? "Block"
 													: "Unblock"}

@@ -139,9 +139,9 @@ const navItems = {
 	],
 	public: [
 		{
-			title: "Dashboard",
-			icon: <LayoutDashboard className="h-5 w-5" />,
-			link: "/admin/dashboard",
+			title: "Home",
+			icon: <Home className="h-5 w-5" />,
+			link: "/",
 		},
 	],
 };

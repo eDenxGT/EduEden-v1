@@ -3,8 +3,6 @@ import Card from "../../../components/CommonComponents/Card";
 import {
   FaEnvelope,
   FaPhone,
-  FaCheck,
-  FaBan,
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
@@ -223,11 +221,6 @@ const StudentManagement = () => {
                             ? "bg-green-100 text-green-800 hover:bg-green-200"
                             : "bg-red-100 text-red-800 hover:bg-red-200"
                         }`}>
-                        {!student.is_blocked ? (
-                          <FaBan className="mr-2" />
-                        ) : (
-                          <FaCheck className="mr-2" />
-                        )}
                         {!student.is_blocked ? "Block" : "Unblock"}
                       </button>
                     </td>

@@ -7,6 +7,7 @@ import StudentManagement from "../components/AdminComponents/SideBar/StudentMana
 import AdminLayout from "../pages/admin/AdminLayout";
 import PublicRoute from "../utils/ProtectRoutes/PublicRoute";
 import PrivateRoute from "../utils/ProtectRoutes/PrivateRoute";
+import Error404Page from "../pages/Others/Error404Page";
 
 const AdminRoutes = () => {
 	return (
@@ -36,6 +37,9 @@ const AdminRoutes = () => {
 					{/* <Route path="settings" element={<AdminSettings />} /> */}
 					{/* <Route path="settings" element={<AdminSettings />} /> */}
 				</Route>
+
+				<Route path="/*" element={<Error404Page />} />
+
 			</Routes>
 		</>
 	);

@@ -127,7 +127,6 @@ const TutorSignup = () => {
 		}
 	};
 
-
 	const handleOtpModalClose = () => {
 		setOtpModalOpen(false);
 	};
@@ -136,13 +135,10 @@ const TutorSignup = () => {
 		try {
 			setIsLoadingOtp(true);
 
-			const response = await axiosInstance.post(
-				"/auth/verify-otp",
-				{
-					email: formData.email,
-					otp: otpString,
-				}
-			);
+			const response = await axiosInstance.post("/auth/verify-otp", {
+				email: formData.email,
+				otp: otpString,
+			});
 
 			if (response.status === 200) {
 				toast.success(response?.data?.message);
@@ -230,7 +226,7 @@ const TutorSignup = () => {
 										onSuccessRedirect={
 											onGoogleSignUpSuccess
 										}
-                              role={"tutor"}
+										role={"tutor"}
 									/>
 								</div>
 								<div className="flex items-center justify-center text-base font-semibold text-gray-600">

@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+//* ====== Imports of Built-In and External Components ====== *//
 import { useEffect, useState } from "react";
 import {
 	Search,
@@ -11,33 +12,46 @@ import {
 	Menu,
 	LogOut,
 } from "lucide-react";
-import Button from "../CommonComponents/Button";
 import { PiGraduationCap } from "react-icons/pi";
+import { FiArrowLeft } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+
+//* ====== Imports of Custom Components ====== *//
+import Button from "../CommonComponents/Button";
+import NavItem from "./NavItems";
+import ConfirmationModal from "../../utils/Modals/ConfirmtionModal";
+
+//* ====== Imports of Redux Slices ====== *//
 import {
 	studentChangeTheme,
 	studentLogout,
 } from "../../store/slices/studentSlice";
-import { FiArrowLeft } from "react-icons/fi";
 import { tutorChangeTheme, tutorLogout } from "../../store/slices/tutorSlice";
 import { adminChangeTheme, adminLogout } from "../../store/slices/adminSlice";
-import NavItem from "./NavItems";
-import SideBarMenu from "../../config/SidebarMenuConfig";
 import { publicChangeTheme } from "../../store/slices/publicSlice";
-import ConfirmationModal from "../../utils/Modals/ConfirmtionModal";
-import { Link, useNavigate } from "react-router-dom";
 
+//* ====== Imports of Configurations ====== *//
+import SideBarMenu from "../../config/SidebarMenuConfig";
+
+
+//* ====== Sidebar Component ====== *//
 const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
+
+	//* ====== Local State for Sidebar ====== *//
 	const [isConfirmationModalOpen, setIsConfirmationModalOpen] =
 		useState(false);
 	const [activeIndex, setActiveIndex] = useState(
 		() => parseInt(localStorage.getItem("activeItem"), 10) || 0
 	);
 
+	
+	//* ====== Synchronize Active Item with LocalStorage ====== *//
 	useEffect(() => {
 		localStorage.setItem("activeItem", activeIndex);
 	}, [activeIndex]);
 
+	//* ====== Handle Logout Actions ====== *//
 	const handleLogoutClick = () => {
 		setIsConfirmationModalOpen(true);
 	};
@@ -47,15 +61,16 @@ const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
 		setIsConfirmationModalOpen(false);
 	};
 
+	//* ====== Close Sidebar and Modal ====== *//
 	const onSideBarClose = () => {
 		onClose();
 		setIsConfirmationModalOpen(false);
 	};
-
 	const onCloseModal = () => {
 		setIsConfirmationModalOpen(false);
 	};
 
+	//* ====== Fetch Navigation Items Based on Role ====== *//
 	const navItems = SideBarMenu[role] || [];
 
 	return (
@@ -66,13 +81,14 @@ const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
 					? "bg-black bg-opacity-50"
 					: "opacity-0 pointer-events-none"
 			}`}>
+			{/* ====== Sidebar Panel ====== */}
 			<div
 				className={`absolute top-0 left-0 h-full w-full sm:w-64 transform transition-transform duration-300 ${
 					isVisible ? "translate-x-0" : "-translate-x-full"
 				} bg-gray-900`}
 				onClick={(e) => e.stopPropagation()}>
 				<div className="flex flex-col h-full">
-					{/* Header */}
+					{/* ====== Sidebar Header ====== */}
 					<div className="flex justify-between px-6 py-4 border-b border-gray-700">
 						<div className="flex items-center gap-2">
 							<PiGraduationCap className="h-8 w-8 text-[#FF5722]" />
@@ -87,7 +103,7 @@ const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
 						</button>
 					</div>
 
-					{/* Navigation */}
+					{/* ====== Navigation Items ====== */}
 					<nav className="flex-1 mt-1 px-3 overflow-y-auto">
 						<div className="space-y-1">
 							{navItems.map((item, index) => (
@@ -101,14 +117,11 @@ const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
 						</div>
 					</nav>
 
-					{/* Logout */}
+					{/* ====== Logout Button ====== */}
 					{role !== "public" && (
 						<div className="mt-auto p-4">
 							<button
-								onClick={() => {
-									handleLogoutClick();
-									localStorage.removeItem("activeItem");
-								}}
+								onClick={handleLogoutClick}
 								className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-400 hover:bg-red-600 hover:text-white transition-colors">
 								<LogOut className="h-5 w-5" />
 								Sign-out
@@ -117,8 +130,9 @@ const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
 					)}
 				</div>
 			</div>
+			{/* ====== Confirmation Modal for Logout ====== */}
 			<ConfirmationModal
-				className={"pointer-events-none"}
+				className="pointer-events-none"
 				isOpen={isConfirmationModalOpen}
 				onConfirm={onConfirmModal}
 				onClose={onCloseModal}
@@ -129,14 +143,19 @@ const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
 			/>
 		</div>
 	);
+
 };
 
+//* ====== Header Component ====== *//
 const Header = ({ role }) => {
+	//* ====== Redux Dispatch and Selectors ====== *//
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 
+	//* ====== Local State for Sidebar Visibility ====== *//
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+	//* ====== Theme and Auth State from Redux ====== *//
 	const studentToggleTheme = useSelector(
 		(state) => state.student?.toggleTheme
 	);
@@ -183,6 +202,7 @@ const Header = ({ role }) => {
 			? tutorAvatar
 			: adminAvatar;
 
+			//* ====== Functions for Logout and Theme Change ====== *//
 	const handleChange = () => {
 		role === "student"
 			? dispatch(studentChangeTheme(!toggleTheme))
@@ -345,7 +365,9 @@ const Header = ({ role }) => {
 									</div>
 								) : (
 									<Link to="/student/signup">
-										<Button className={`bg-[#ff662e]`}>Create Account</Button>
+										<Button className={`bg-[#ff662e]`}>
+											Create Account
+										</Button>
 									</Link>
 								)}
 							</div>

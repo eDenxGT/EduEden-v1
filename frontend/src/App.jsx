@@ -7,8 +7,6 @@ import StudentRoutes from "./routes/StudentRoutes";
 import TutorRoutes from "./routes/TutorRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
 import { Toaster } from "sonner";
-import LoadingUi from "./utils/Modals/LoadingUi";
-import ConfirmationModal from "./utils/Modals/ConfirmtionModal";
 import PublicRoutes from "./routes/PublicRoutes";
 import Error404Page from "./pages/Others/Error404Page";
 
@@ -30,8 +28,6 @@ function App() {
 					element={<ResetPassword />}
 				/>
 
-				<Route path="/test" element={<ConfirmationModal />} />
-				<Route path="/loading" element={<LoadingUi />} />
 				<Route path="/*" element={<Error404Page />} />
 			</Routes>
 		</Router>
