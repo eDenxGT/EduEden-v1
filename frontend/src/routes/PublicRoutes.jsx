@@ -17,9 +17,8 @@ const PublicRoutes = () => {
 				<Route path="" element={<LandingPage />} />
 				{/* <Route path="contact" element={<ContactPage />} /> */}
 			</Route>
-         
-         <Route path="/*" element={<Error404Page />} />
 
+			<Route path="/*" element={<Error404Page />} />
 		</Routes>
 	);
 };

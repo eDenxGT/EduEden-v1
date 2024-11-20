@@ -30,14 +30,15 @@ const TutorRoutes = () => {
 				<Route
 					path="/"
 					element={
-						<PrivateRoute allowedRoles={["tutor"]} redirectTo={"/tutor/signin"}>
+						<PrivateRoute
+							allowedRoles={["tutor"]}
+							redirectTo={"/tutor/signin"}>
 							<TutorLayout />
 						</PrivateRoute>
 					}>
 					<Route path="dashboard" element={<TutorDashboard />} />
 				</Route>
 				<Route path="/*" element={<Error404Page />} />
-
 			</Routes>
 		</>
 	);

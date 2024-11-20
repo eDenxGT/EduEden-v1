@@ -10,7 +10,9 @@ import { FiArrowRight } from "react-icons/fi";
 import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
 import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
 import { toast } from "sonner";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { studentLogin } from "../../../store/slices/studentSlice";
+
 
 const SignUp = () => {
 	const [formData, setFormData] = useState({
@@ -39,6 +41,7 @@ const SignUp = () => {
 	const [otpModalOpen, setOtpModalOpen] = useState(false);
 	const navigate = useNavigate();
 	const isDarkMode = useSelector((state) => state.student.toggleTheme);
+	const dispatch = useDispatch()
 
 
 	const handleChange = (e) => {
@@ -148,7 +151,8 @@ const SignUp = () => {
 		}
 	};
 
-	const onGoogleSignUpSuccess = async () => {
+	const onGoogleSignUpSuccess = async (data) => {
+		dispatch(studentLogin({studentData: data.userData, token: data.token}))
 		toast.success("Google sign-in was successful.");
 		setTimeout(() => {
 			navigate("/student/home");

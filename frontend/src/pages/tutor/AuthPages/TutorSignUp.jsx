@@ -10,6 +10,8 @@ import { FiArrowRight } from "react-icons/fi";
 import { toast } from "sonner";
 import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
 import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
+import { useDispatch } from "react-redux";
+import { tutorLogin } from "../../../store/slices/tutorSlice";
 
 const TutorSignup = () => {
 	const [formData, setFormData] = useState({
@@ -41,6 +43,7 @@ const TutorSignup = () => {
 	const [isFormValid, setIsFormValid] = useState(false);
 	const [otpModalOpen, setOtpModalOpen] = useState(false);
 	const navigate = useNavigate();
+	const dispatch = useDispatch()
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
@@ -155,7 +158,8 @@ const TutorSignup = () => {
 		}
 	};
 
-	const onGoogleSignUpSuccess = async () => {
+	const onGoogleSignUpSuccess = async (data) => {
+		dispatch(tutorLogin({ tutorData: data.userData, token: data.token }));
 		toast.success("Google sign-in was successful.");
 		setTimeout(() => {
 			navigate("/tutor/dashboard");

@@ -41,7 +41,6 @@ const StudentRoutes = () => {
 				</Route>
 
 				<Route path="/*" element={<Error404Page />} />
-
 			</Routes>
 		</>
 	);

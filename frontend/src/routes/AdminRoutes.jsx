@@ -35,11 +35,9 @@ const AdminRoutes = () => {
 					<Route path="tutors" element={<TutorMangement />} />
 					<Route path="students" element={<StudentManagement />} />
 					{/* <Route path="settings" element={<AdminSettings />} /> */}
-					{/* <Route path="settings" element={<AdminSettings />} /> */}
 				</Route>
 
 				<Route path="/*" element={<Error404Page />} />
-
 			</Routes>
 		</>
 	);

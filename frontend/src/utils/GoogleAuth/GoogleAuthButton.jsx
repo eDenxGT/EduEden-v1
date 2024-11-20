@@ -10,7 +10,6 @@ const GoogleAuthButton = ({ onSuccessRedirect, role, isDarkMode }) => {
 				token: response.credential,
 				role,
 			});
-
 			onSuccessRedirect(res.data);
 		} catch (error) {
 			toast.error(

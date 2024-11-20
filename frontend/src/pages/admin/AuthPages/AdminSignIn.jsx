@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../../api/axiosConfig";
 import Spinner from "../../../utils/Spinner/Spinner";
 import { adminLogin } from "../../../store/slices/adminSlice";
@@ -267,7 +267,7 @@ export default function AdminSignIn() {
 											Remember me
 										</label>
 									</div>
-									<Link
+									{/* <Link
 										to="/admin/forgot-password"
 										className={`text-sm font-medium ${
 											isDarkMode
@@ -275,7 +275,7 @@ export default function AdminSignIn() {
 												: "text-blue-600 hover:text-blue-700"
 										}`}>
 										Forgot password?
-									</Link>
+									</Link> */}
 								</div>
 
 								<button
