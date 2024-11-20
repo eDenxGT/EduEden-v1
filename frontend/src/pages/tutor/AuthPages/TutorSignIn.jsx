@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PiGraduationCap } from "react-icons/pi";
 import InputField from "../../../components/CommonComponents/InputField";
 import Button from "../../../components/CommonComponents/Button";
@@ -50,6 +50,19 @@ const TutorSignIn = () => {
 		);
 	};
 
+	useEffect(() => {
+		const savedEmail = localStorage.getItem("formEmail");
+		const savedOtpModalState = localStorage.getItem("isOtpModalOpen");
+
+		if (savedEmail) {
+			setFormData({ email: localStorage.getItem("formEmail") });
+		}
+		if (savedOtpModalState === "true") {
+			setOtpModalOpen(true);
+		}
+	}, []);
+
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setIsLoading(true);
@@ -63,6 +76,8 @@ const TutorSignIn = () => {
 			if (response.status === 200) {
 				dispatch(tutorLogin(response.data));
 				toast.success(response?.data?.message);
+				localStorage.removeItem("isOtpModalOpen");
+				localStorage.removeItem("formEmail");
 				setTimeout(() => {
 					navigate("/tutor/dashboard");
 				}, 2000);
@@ -74,6 +89,8 @@ const TutorSignIn = () => {
 			if (error?.response?.data?.not_verified) {
 				setOtpModalOpen(true);
 				resendOtp();
+				localStorage.setItem("isOtpModalOpen", true);
+				localStorage.setItem("formEmail", formData.email);
 			}
 		} finally {
 			setIsLoading(false);
@@ -92,6 +109,9 @@ const TutorSignIn = () => {
 			if (response.status === 200) {
 				toast.success(response?.data?.message);
 				setOtpModalOpen(false);
+				localStorage.removeItem("isOtpModalOpen");
+				localStorage.removeItem("formEmail");
+				dispatch(tutorLogin(response?.data));
 				setTimeout(() => {
 					navigate("/tutor/dashboard");
 				}, 1500);
@@ -123,6 +143,8 @@ const TutorSignIn = () => {
 
   const handleOtpModalClose = () => {
     setOtpModalOpen(false);
+	 localStorage.removeItem("isOtpModalOpen");
+	 localStorage.removeItem("formEmail");
   }
 
 	const onGoogleSignInSuccess = async (data) => {

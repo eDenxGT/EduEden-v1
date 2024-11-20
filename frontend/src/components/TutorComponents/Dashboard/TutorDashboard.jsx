@@ -11,7 +11,7 @@ import {
 	ArrowRight,
    UserCircle2Icon,
 } from "lucide-react";
-import Button from "../../components/CommonComponents/Button";
+import Button from "../../../components/CommonComponents/Button";
 
 // eslint-disable-next-line react/prop-types
 const QuickStatCard = ({ icon, title, value, isDarkMode }) => (

@@ -74,6 +74,7 @@ const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
 	const navItems = SideBarMenu[role] || [];
 
 	return (
+		//* ====== Overlay for Sidebar ====== *//
 		<div
 			onClick={onSideBarClose}
 			className={`fixed inset-0 z-40 transition-opacity duration-300 ${

@@ -85,13 +85,19 @@ const studentSignIn = async (req, res) => {
 		});
 		if (isTutorAccount) {
 			return res
-				.status(400)
-				.json({ message: "This account is a tutor account" });
+			.status(400)
+			.json({ message: "This account is a tutor account" });
 		}
-
+		
 		const isUserUnverified = await UnverifiedUser.findOne({
 			$or: [{ email }, { user_name: email }],
 		});
+
+		if (isUserUnverified && isUserUnverified.role !== "student") {
+			return res
+			.status(400)
+			.json({ message: "This account is a tutor account" });
+		}
 		if (isUserUnverified) {
 			return res
 				.status(403)
@@ -148,8 +154,10 @@ const verifyOtp = async (req, res) => {
 		if (Date.now() > unverifiedUser.otpExpiry) {
 			return res.status(400).json({ message: "OTP has expired" });
 		}
+
+		let userData;
 		if (unverifiedUser.role === "student") {
-			const student = new Student({
+			userData = new Student({
 				full_name: unverifiedUser.full_name,
 				user_name: unverifiedUser.user_name,
 				email: unverifiedUser.email,
@@ -157,9 +165,9 @@ const verifyOtp = async (req, res) => {
 				password: unverifiedUser.password,
 				is_verified: true,
 			});
-			await student.save();
+			await userData.save();
 		} else if (unverifiedUser.role === "tutor") {
-			const tutor = new Tutor({
+			userData = new Tutor({
 				full_name: unverifiedUser.full_name,
 				user_name: unverifiedUser.user_name,
 				email: unverifiedUser.email,
@@ -167,13 +175,19 @@ const verifyOtp = async (req, res) => {
 				password: unverifiedUser.password,
 				is_verified: true,
 			});
-			await tutor.save();
+			await userData.save();
 		}
+
+		const { password: _, ...otherDetails } = userData.toObject();
+
+		const token = createToken(userData._id);
 
 		await UnverifiedUser.deleteOne({ email });
 
 		res.status(200).json({
 			message: "Email verified successfully.",
+			userData: otherDetails,
+			token: token,
 		});
 	} catch (error) {
 		console.log("OTP Verification Error: ", error);
@@ -183,13 +197,19 @@ const verifyOtp = async (req, res) => {
 
 const resendOtp = async (req, res) => {
 	try {
-		const { email } = req.body;
+		const { email, role } = req.body;
 		const unverifiedUser = await UnverifiedUser.findOne({ email });
 
 		if (!unverifiedUser) {
 			return res
 				.status(404)
 				.json({ success: false, message: "User not found." });
+		}
+
+		if(unverifiedUser.role !== role && role === "student") {
+			return res.status(400).json({message: "This is a Tutor Account"})
+		} else if (unverifiedUser.role !== role && role === "tutor") {
+			return res.status(400).json({message: "This is a Student Account"})
 		}
 
 		const remainingTime = unverifiedUser.otpExpiry - Date.now();
@@ -341,7 +361,9 @@ const forgotPassword = async (req, res) => {
 
 		await user.save();
 
-		const link = `${FRONTEND_URL}/reset-password/${token}?name=${encodeURIComponent(user.full_name)}&role=${role}`;
+		const link = `${FRONTEND_URL}/reset-password/${token}?name=${encodeURIComponent(
+			user.full_name
+		)}&role=${role}`;
 		await sendPasswordResetEmail(email, link);
 
 		return res.status(200).json({ message: "Email sent successfully." });
@@ -471,6 +493,11 @@ const tutorSignIn = async (req, res) => {
 		const isUserUnverified = await UnverifiedUser.findOne({
 			$or: [{ email }, { user_name: email }],
 		});
+		if (isUserUnverified && isUserUnverified.role !== "tutor") {
+			return res
+			.status(400)
+			.json({ message: "This account is a student account" });
+		}
 
 		if (isUserUnverified) {
 			return res

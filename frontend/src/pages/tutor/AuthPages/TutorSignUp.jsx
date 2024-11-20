@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TutorImage from "../../../assets/images/authPage/RocketGirlImage.png";
 import { PiGraduationCap } from "react-icons/pi";
 import InputField from "../../../components/CommonComponents/InputField";
@@ -43,7 +43,7 @@ const TutorSignup = () => {
 	const [isFormValid, setIsFormValid] = useState(false);
 	const [otpModalOpen, setOtpModalOpen] = useState(false);
 	const navigate = useNavigate();
-	const dispatch = useDispatch()
+	const dispatch = useDispatch();
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
@@ -98,6 +98,18 @@ const TutorSignup = () => {
 		);
 	};
 
+	useEffect(() => {
+		const savedEmail = localStorage.getItem("formEmail");
+		const savedOtpModalState = localStorage.getItem("isOtpModalOpen");
+
+		if (savedEmail) {
+			setFormData({ email: localStorage.getItem("formEmail") });
+		}
+		if (savedOtpModalState === "true") {
+			setOtpModalOpen(true);
+		}
+	}, []);
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setIsLoading(true);
@@ -118,6 +130,8 @@ const TutorSignup = () => {
 			);
 			if (response.status === 201) {
 				setOtpModalOpen(true);
+				localStorage.setItem("formEmail", formData.email);
+				localStorage.setItem("isOtpModalOpen", true);
 				setTimeout(() => {
 					toast.success(response?.data?.message);
 				}, 2000);
@@ -132,6 +146,8 @@ const TutorSignup = () => {
 
 	const handleOtpModalClose = () => {
 		setOtpModalOpen(false);
+		localStorage.removeItem("isOtpModalOpen");
+		localStorage.removeItem("formEmail");
 	};
 
 	const handleOtpVerify = async (otpString) => {
@@ -146,6 +162,8 @@ const TutorSignup = () => {
 			if (response.status === 200) {
 				toast.success(response?.data?.message);
 				setOtpModalOpen(false);
+				localStorage.removeItem("isOtpModalOpen");
+				localStorage.removeItem("formEmail");
 				setTimeout(() => {
 					navigate("/tutor/signin");
 				}, 2000);

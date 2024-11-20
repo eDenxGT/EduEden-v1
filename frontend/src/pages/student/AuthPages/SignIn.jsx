@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PiGraduationCap } from "react-icons/pi";
 import InputField from "../../../components/CommonComponents/InputField";
 import Button from "../../../components/CommonComponents/Button";
@@ -28,7 +28,7 @@ const SignIn = () => {
 	const [isLoadingOtp, setIsLoadingOtp] = useState(false);
 	const navigate = useNavigate();
 
-	const dispatch = useDispatch()
+	const dispatch = useDispatch();
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
@@ -49,6 +49,17 @@ const SignIn = () => {
 			Object.values({ ...errors, [name]: error }).every((err) => !err)
 		);
 	};
+	useEffect(() => {
+		const savedEmail = localStorage.getItem("formEmail");
+		const savedOtpModalState = localStorage.getItem("isOtpModalOpen");
+
+		if (savedEmail) {
+			setFormData({ email: localStorage.getItem("formEmail") });
+		}
+		if (savedOtpModalState === "true") {
+			setOtpModalOpen(true);
+		}
+	}, []);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -59,12 +70,13 @@ const SignIn = () => {
 		try {
 			const response = await axiosInstance.post("/auth/signin", formData);
 			if (response.status === 200) {
-				const data = response?.data
-				dispatch(studentLogin(data))
+				const data = response?.data;
+				dispatch(studentLogin(data));
+				localStorage.removeItem("isOtpModalOpen");
+				localStorage.removeItem("formEmail");
 				setTimeout(() => {
 					navigate("/student/home");
 				}, 1500);
-				
 			}
 		} catch (error) {
 			console.error("SignIn Submit Error:", error);
@@ -74,7 +86,6 @@ const SignIn = () => {
 			toast.error(errorMessage);
 
 			if (error?.response?.data?.not_verified) {
-				setOtpModalOpen(true);
 				resendOtp();
 			}
 		} finally {
@@ -89,6 +100,9 @@ const SignIn = () => {
 				role: "student",
 			});
 			if (response.status === 200) {
+				setOtpModalOpen(true);
+				localStorage.setItem("isOtpModalOpen", true);
+				localStorage.setItem("formEmail", formData.email);
 				setTimeout(() => {
 					toast.success(response?.data?.message);
 				}, 2000);
@@ -111,6 +125,10 @@ const SignIn = () => {
 
 			if (response.status === 200) {
 				toast.success(response?.data?.message);
+				localStorage.removeItem("isOtpModalOpen");
+				localStorage.removeItem("formEmail");
+
+				dispatch(studentLogin(response?.data));
 				setOtpModalOpen(false);
 				setTimeout(() => {
 					navigate("/student/home");
@@ -126,10 +144,14 @@ const SignIn = () => {
 
 	const handleOtpModalClose = () => {
 		setOtpModalOpen(false);
+		localStorage.removeItem("isOtpModalOpen");
+		localStorage.removeItem("formEmail");
 	};
 
 	const onGoogleSignInSuccess = async (data) => {
-		dispatch(studentLogin({studentData: data.userData, token: data.token}))
+		dispatch(
+			studentLogin({ studentData: data.userData, token: data.token })
+		);
 		toast.success("Google sign-in was successful.");
 		setTimeout(() => {
 			navigate("/student/home");
@@ -181,10 +203,10 @@ const SignIn = () => {
 							<div>
 								<div className="mb-7">
 									<GoogleAuthButton
-										onSuccessRedirect={(data)=>
+										onSuccessRedirect={(data) =>
 											onGoogleSignInSuccess(data)
 										}
-										role={'student'}
+										role={"student"}
 										// isDarkMode={isDarkMode}
 									/>
 								</div>
