@@ -3,11 +3,6 @@ import {
 	User,
 	Mail,
 	Phone,
-	Briefcase,
-	Globe,
-	Instagram,
-	Linkedin,
-	Youtube,
 	Lock,
 	Camera,
 	ArrowRight,
@@ -25,17 +20,17 @@ import {
 	axiosInstance,
 	axiosMultipartInstance,
 } from "../../../api/axiosConfig";
-import { tutorUpdate } from "../../../store/slices/tutorSlice";
+import { studentUpdate } from "../../../store/slices/studentSlice";
 
 const ProfileManagement = () => {
-	const isDarkMode = useSelector((state) => state.tutor.toggleTheme);
-	const tutorData = useSelector((state) => state.tutor.tutorData);
+	const isDarkMode = useSelector((state) => state.student.toggleTheme);
+	const studentData = useSelector((state) => state.student.studentData);
 
 	const { startLoading, stopLoading } = useLoading();
-	const [profileImage, setProfileImage] = useState(tutorData?.avatar || null);
+	const [profileImage, setProfileImage] = useState(studentData?.avatar || null);
 	const [file, setFile] = useState(null);
 
-	const dispatch = useDispatch();
+   const dispatch = useDispatch()
 
 	const [showPassword, setShowPassword] = useState({
 		current: false,
@@ -43,36 +38,22 @@ const ProfileManagement = () => {
 		confirm: false,
 	});
 	const [formData, setFormData] = useState({
-		full_name: tutorData?.full_name || "",
-		user_name: tutorData?.user_name || "",
-		email: tutorData?.email || "",
-		phone: tutorData?.phone || "",
-		title: tutorData?.job_title || "",
-		website: tutorData?.social_profiles?.personal_website || "",
-		instagram: tutorData?.social_profiles?.instagram || "",
-		linkedin: tutorData?.social_profiles?.linkedin || "",
-		whatsapp: tutorData?.social_profiles?.whatsapp || "",
-		youtube: tutorData?.social_profiles?.youtube || "",
+		full_name: studentData?.full_name || "",
+		user_name: studentData?.user_name || "",
+		email: studentData?.email || "",
+		phone: studentData?.phone || "",
 		currentPassword: "",
 		newPassword: "",
 		confirmPassword: "",
-		biography: tutorData?.bio || "",
 	});
 	const [errors, setErrors] = useState({
 		full_name: "",
 		user_name: "",
 		email: "",
 		phone: "",
-		title: "",
-		website: "",
-		instagram: "",
-		linkedin: "",
-		whatsapp: "",
-		youtube: "",
 		currentPassword: "",
 		newPassword: "",
 		confirmPassword: "",
-		biography: "",
 	});
 	const [isFormValid, setIsFormValid] = useState(false);
 
@@ -99,14 +80,6 @@ const ProfileManagement = () => {
 			case "phone":
 				if (!/^\d+$/.test(value) || value.length !== 10)
 					error = "Must be 10 digits";
-				break;
-			case "website":
-			case "youtube":
-			case "whatsapp":
-			case "linkedin":
-			case "instagram":
-				if (!/^https?:\/\/.+/.test(value) && value.length !== 0)
-					error = "Enter a valid link";
 				break;
 			case "currentPassword":
 				if (value && value.length < 6 && value.length !== 0)
@@ -140,12 +113,14 @@ const ProfileManagement = () => {
 	const handleImageUpload = (e) => {
 		const file = e.target.files[0];
 		if (file) {
-			if (file.size > 5 * 1024 * 1024) {
+			if (file.size >  5 * 1024 * 1024) {
 				toast.info("Image size must be less than 5MB");
 				return;
 			}
 			if (!["image/jpeg", "image/png"].includes(file.type)) {
-				toast.info("Invalid file type. Only JPEG, or PNG are allowed.");
+				toast.info(
+					"Invalid file type. Only JPEG, or PNG are allowed."
+				);
 				return;
 			}
 			const reader = new FileReader();
@@ -162,7 +137,7 @@ const ProfileManagement = () => {
 			const sanitizedName = file.name
 				.replace(/[^a-z0-9.\-_]/gi, "")
 				.slice(0, 30);
-			const public_id = `tutor_avatar_${sanitizedName}_${Date.now()}`;
+			const public_id = `student_avatar_${sanitizedName}_${Date.now()}`;
 			const folder = "profile_images";
 			const timestamp = Math.floor(Date.now() / 1000);
          const transformation = "c_fill,w_150,h_150,g_face,r_max,q_auto,f_auto";
@@ -173,7 +148,7 @@ const ProfileManagement = () => {
 					folder,
 					timestamp,
 					public_id,
-               transformation
+               transformation,
 				}
 			);
 
@@ -191,77 +166,72 @@ const ProfileManagement = () => {
 			data.append("api_key", apiKey);
 			data.append("public_id", public_id);
 			data.append("timestamp", timestamp);
-         data.append("transformation", transformation);
+			data.append("transformation", transformation);
 
 			const cloudinaryResponse = await axiosMultipartInstance.post(
 				`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
 				data
 			);
 
-			return cloudinaryResponse.data;
+         return cloudinaryResponse.data
+
 		} catch (error) {
 			console.error("Cloudinary Upload Error: ", error);
 		}
 	};
 
-	const handleSubmit = async (e) => {
-		e.preventDefault();
+   const handleSubmit = async (e) => {
+      e.preventDefault();
+   
+      if (!isFormValid) {
+         toast.error("Please correct the errors in the form");
+         return;
+      }
+   
+      startLoading();
+      try {
+         const updatedFields = {};
+   
+         Object.keys(formData).forEach((key) => {
+            if (formData[key] !== studentData[key]) {
+               updatedFields[key] = formData[key];
+            }
+         });
+   
+         if (file) {
+            const imageUploaded = await handleUploadToCloudinary();
+            if (!imageUploaded) {
+               return toast.error("Something went wrong while uploading the image.");
+            }
+            updatedFields.avatar = imageUploaded.secure_url;
+         }
+   
+         if (Object.keys(updatedFields).length === 0) {
+            toast.info("No changes detected to update.");
+            return;
+         }
+   
+         updatedFields.studentId = studentData._id;
+   
+         const response = await axiosInstance.put("/student/update-profile", updatedFields);
+   
+         if (response.status !== 200) {
+            toast.error("Failed to update profile");
+            return;
+         }
 
-		if (!isFormValid) {
-			toast.error("Please correct the errors in the form");
-			return;
-		}
-
-		startLoading();
-		try {
-			const updatedFields = {};
-
-			Object.keys(formData).forEach((key) => {
-				if (formData[key] !== tutorData[key]) {
-					updatedFields[key] = formData[key];
-				}
-			});
-
-			if (file) {
-				const imageUploaded = await handleUploadToCloudinary();
-				if (!imageUploaded) {
-					return toast.error(
-						"Something went wrong while uploading the image."
-					);
-				}
-				updatedFields.avatar = imageUploaded.secure_url;
-			}
-
-			if (Object.keys(updatedFields).length === 0) {
-				toast.info("No changes detected to update.");
-				return;
-			}
-
-			updatedFields.tutorId = tutorData._id;
-
-			const response = await axiosInstance.put(
-				"/tutor/update-profile",
-				updatedFields
-			);
-
-			if (response.status !== 200) {
-				toast.error("Failed to update profile");
-				return;
-			}
-
-			dispatch(tutorUpdate(response.data.tutorData));
-
-			console.log("Profile Updated: ", response.data);
-			toast.success("Profile updated successfully");
-		} catch (error) {
-			console.error("Error updating profile:", error);
-			toast.error(
-				error?.response?.data?.message || "Failed to update profile"
-			);
-		} finally {
-			stopLoading();
-		}
-	};
+         dispatch(studentUpdate(response.data.studentData));
+   
+         console.log("Profile Updated: ", response.data);
+         toast.success("Profile updated successfully");
+      } catch (error) {
+         console.error("Error updating profile:", error);
+         toast.error(error?.response?.data?.message ||"Failed to update profile");
+      } finally {
+         stopLoading();
+      }
+   };
+   
 
 	return (
 		<div
@@ -292,7 +262,7 @@ const ProfileManagement = () => {
 									: "border-gray-300"
 							} text-sm`}>
 							<Link
-								to="/tutor/settings"
+								to="/student/settings"
 								className={`${
 									isDarkMode
 										? "text-gray-400 hover:text-gray-300"
@@ -415,62 +385,6 @@ const ProfileManagement = () => {
 										</span>
 									)}
 								</div>
-								<div className="relative">
-									<InputField
-										label="Title"
-										name="title"
-										value={formData.title}
-										onChange={handleChange}
-										placeholder="Your job title, role"
-										icon={<Briefcase size={18} />}
-										error={errors.title}
-										className={`${
-											isDarkMode
-												? "bg-gray-700 border-gray-600 text-white"
-												: "bg-white border-gray-300 text-gray-900"
-										}`}
-									/>
-									{errors.title && (
-										<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem] flex items-center">
-											<AlertTriangle
-												size={12}
-												className="mr-1"
-											/>
-											{errors.title}
-										</span>
-									)}
-								</div>
-								<div className="relative">
-									<label
-										className={`block text-sm font-medium ${
-											isDarkMode
-												? "text-gray-300"
-												: "text-gray-700"
-										} mb-2`}>
-										Biography
-									</label>
-									<textarea
-										name="biography"
-										value={formData.biography}
-										onChange={handleChange}
-										placeholder="Your small biography"
-										rows={4}
-										className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5722] focus:border-transparent resize-none ${
-											isDarkMode
-												? "bg-gray-700 border-gray-600 text-white"
-												: "bg-white border-gray-300 text-gray-900"
-										}`}
-									/>
-									{errors.biography && (
-										<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem] flex items-center">
-											<AlertTriangle
-												size={12}
-												className="mr-1"
-											/>
-											{errors.biography}
-										</span>
-									)}
-								</div>
 							</div>
 							<div className="space-y-6">
 								<div className="relative w-48 h-48 mx-auto">
@@ -524,150 +438,6 @@ const ProfileManagement = () => {
 								</p>
 							</div>
 						</div>
-
-						<Card
-							className={`mt-8 p-8 ${
-								isDarkMode ? "bg-gray-800" : "bg-white"
-							} rounded-lg`}>
-							<h2
-								className={`text-xl font-semibold mb-8 pb-4 border-b ${
-									isDarkMode
-										? "border-gray-600"
-										: "border-gray-300"
-								}`}>
-								Social Profile
-							</h2>
-							<div className="space-y-6">
-								<div className="relative">
-									<InputField
-										label="Personal Website"
-										type="url"
-										name="website"
-										value={formData.website}
-										onChange={handleChange}
-										placeholder="Personal website or portfolio url"
-										icon={<Globe size={18} />}
-										error={errors.website}
-										className={`${
-											isDarkMode
-												? "bg-gray-700 border-gray-600 text-white"
-												: "bg-white border-gray-300 text-gray-900"
-										}`}
-									/>
-									{errors.website && (
-										<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem] flex items-center">
-											<AlertTriangle
-												size={12}
-												className="mr-1"
-											/>
-											{errors.website}
-										</span>
-									)}
-								</div>
-								<div className="grid md:grid-cols-2 gap-6">
-									<div className="relative">
-										<InputField
-											label="Instagram"
-											name="instagram"
-											value={formData.instagram}
-											onChange={handleChange}
-											placeholder="Instagram Link"
-											icon={<Instagram size={18} />}
-											error={errors.instagram}
-											className={`${
-												isDarkMode
-													? "bg-gray-700 border-gray-600 text-white"
-													: "bg-white border-gray-300 text-gray-900"
-											}`}
-										/>
-										{errors.instagram && (
-											<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem] flex items-center">
-												<AlertTriangle
-													size={12}
-													className="mr-1"
-												/>
-												{errors.instagram}
-											</span>
-										)}
-									</div>
-									<div className="relative">
-										<InputField
-											label="LinkedIn"
-											name="linkedin"
-											value={formData.linkedin}
-											onChange={handleChange}
-											placeholder="Linkedin Link"
-											icon={<Linkedin size={18} />}
-											error={errors.linkedin}
-											className={`${
-												isDarkMode
-													? "bg-gray-700 border-gray-600 text-white"
-													: "bg-white border-gray-300 text-gray-900"
-											}`}
-										/>
-										{errors.linkedin && (
-											<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem] flex items-center">
-												<AlertTriangle
-													size={12}
-													className="mr-1"
-												/>
-												{errors.linkedin}
-											</span>
-										)}
-									</div>
-									<div className="relative">
-										<InputField
-											label="WhatsApp"
-											name="whatsapp"
-											value={formData.whatsapp}
-											onChange={handleChange}
-											placeholder="https://wa.me/1234567890"
-											icon={<Phone size={18} />}
-											error={errors.whatsapp}
-											className={`${
-												isDarkMode
-													? "bg-gray-700 border-gray-600 text-white"
-													: "bg-white border-gray-300 text-gray-900"
-											}`}
-										/>
-										{errors.whatsapp && (
-											<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem] flex items-center">
-												<AlertTriangle
-													size={12}
-													className="mr-1"
-												/>
-												{errors.whatsapp}
-											</span>
-										)}
-									</div>
-									<div className="relative">
-										<InputField
-											label="YouTube"
-											name="youtube"
-											value={formData.youtube}
-											onChange={handleChange}
-											placeholder="Youtube Link"
-											icon={<Youtube size={18} />}
-											error={errors.youtube}
-											className={`${
-												isDarkMode
-													? "bg-gray-700 border-gray-600 text-white"
-													: "bg-white border-gray-300 text-gray-900"
-											}`}
-										/>
-										{errors.youtube && (
-											<span className="text-xs text-red-600 absolute bottom-[0.65rem] right-[0.4rem] flex items-center">
-												<AlertTriangle
-													size={12}
-													className="mr-1"
-												/>
-												{errors.youtube}
-											</span>
-										)}
-									</div>
-								</div>
-							</div>
-						</Card>
 
 						<Card
 							className={`mt-8 p-8 ${
@@ -818,3 +588,4 @@ const ProfileManagement = () => {
 };
 
 export default ProfileManagement;
+

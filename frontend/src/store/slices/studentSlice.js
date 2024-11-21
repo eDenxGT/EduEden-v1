@@ -16,6 +16,14 @@ const studentSlice = createSlice({
 			state.token = action.payload.token;
 			state.isAuthenticated = true;			
 		},
+		studentUpdate(state, action) {
+			console.log(action);
+			
+			state.studentData =  {
+				...state.tutorData,
+				...action.payload
+			}
+		},
 		studentChangeTheme(state, action) {
 			state.toggleTheme = action.payload;
 		},
@@ -29,7 +37,7 @@ const studentSlice = createSlice({
 	},
 });
 
-export const { studentChangeTheme, studentLogin, studentLogout } =
+export const { studentChangeTheme,studentUpdate, studentLogin, studentLogout } =
 	studentSlice.actions;
 
 export default studentSlice.reducer;

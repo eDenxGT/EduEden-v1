@@ -1,82 +1,76 @@
 import {
 	User,
 	Book,
-	MessageCircle,
+	Bell,
 	DollarSign,
 	Lock,
-	Calendar,
 	Eye,
-	Star,
-	Bell,
 	SettingsIcon,
+	HelpCircle,
+	Share2,
 	ChevronRight,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
-export default function TutorSettings() {
-	const isDarkMode = useSelector((state) => state.tutor.toggleTheme);
+const Settings = () => {
+	const isDarkMode = useSelector((state) => state.student.toggleTheme);
 
 	const settingsItems = [
 		{
 			icon: User,
-			title: "Profile",
-			description: "Manage your personal information",
-			link: "/tutor/settings/profile",
-		},
-		{
-			icon: Book,
-			title: "Courses",
-			description: "Manage your course offerings",
-			link: "/manage-courses",
-		},
-		{
-			icon: MessageCircle,
-			title: "Communication",
-			description: "Manage your messaging preferences",
-			link: "/communication-settings",
-		},
-		{
-			icon: DollarSign,
-			title: "Payments",
-			description: "Manage your earnings and payouts",
-			link: "/payment-dashboard",
+			title: "Personal Information",
+			description: "Manage your profile and account details",
+			link: "/student/settings/profile",
 		},
 		{
 			icon: Lock,
 			title: "Security",
-			description: "Manage your account security",
-			link: "/security-settings",
-		},
-		{
-			icon: Calendar,
-			title: "Availability",
-			description: "Set your teaching schedule",
-			link: "/manage-availability",
-		},
-		{
-			icon: Eye,
-			title: "Privacy",
-			description: "Manage your privacy settings",
-			link: "/privacy-settings",
-		},
-		{
-			icon: Star,
-			title: "Reviews",
-			description: "Manage your student reviews",
-			link: "/manage-reviews",
+			description: "Manage your account security and password",
+			link: "/student/settings/security",
 		},
 		{
 			icon: Bell,
 			title: "Notifications",
 			description: "Manage your notification preferences",
-			link: "/notification-settings",
+			link: "/student/settings/notifications",
+		},
+		{
+			icon: Eye,
+			title: "Privacy",
+			description: "Manage your privacy settings",
+			link: "/student/settings/privacy",
+		},
+		{
+			icon: Book,
+			title: "Courses",
+			description: "View your active and completed courses",
+			link: "/student/settings/courses",
+		},
+		{
+			icon: DollarSign,
+			title: "Payment Information",
+			description: "Manage your payment methods and billing history",
+			link: "/student/settings/payment",
 		},
 		{
 			icon: SettingsIcon,
-			title: "Account Settings",
-			description: "Manage your account preferences",
-			link: "/account-settings",
+			title: "Preferences",
+			description:
+				"Set your language, time zone, and accessibility options",
+			link: "/student/settings/preferences",
+		},
+		{
+			icon: HelpCircle,
+			title: "Help and Support",
+			description: "Get help or contact support",
+			link: "/student/settings/support",
+		},
+		{
+			icon: Share2,
+			title: "Refer a Friend",
+			description: "Share your referral link and earn rewards",
+			link: "/student/settings/referral",
 		},
 	];
 
@@ -91,7 +85,7 @@ export default function TutorSettings() {
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-colors duration-300">
 					<div className="flex justify-between items-center mb-8">
 						<h1 className="text-2xl sm:text-3xl font-bold">
-							Tutor Settings
+							Student Settings
 						</h1>
 					</div>
 
@@ -152,4 +146,6 @@ export default function TutorSettings() {
 			</div>
 		</div>
 	);
-}
+};
+
+export default Settings;

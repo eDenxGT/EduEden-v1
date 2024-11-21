@@ -9,12 +9,12 @@ import { Toaster } from "sonner";
 import PublicRoutes from "./routes/PublicRoutes";
 import Error404Page from "./pages/Others/Error404Page";
 import PublicRoute from "./utils/ProtectRoutes/PublicRoute";
+import LoadingUi from "./utils/Modals/LoadingUi";
 
 function App() {
 	return (
 		<Router>
 			<Toaster position="top-right" richColors />
-
 			<Routes>
 				<Route path="/" element={<PublicRoutes />} />
 				<Route path="/student/*" element={<StudentRoutes />} />
@@ -37,8 +37,10 @@ function App() {
 					}
 				/>
 
+				{/* <Route path="/loading" element={<LoadingUi />} /> */}
 				<Route path="/*" element={<Error404Page />} />
 			</Routes>
+			<LoadingUi />
 		</Router>
 	);
 }

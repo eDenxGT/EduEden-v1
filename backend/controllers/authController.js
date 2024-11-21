@@ -103,6 +103,7 @@ const studentSignIn = async (req, res) => {
 				.status(403)
 				.json({ not_verified: true, message: "Verify your email" });
 		}
+		
 
 		if (!student && !isUserUnverified) {
 			return res.status(400).json({ message: "Account not found" });
@@ -504,6 +505,9 @@ const tutorSignIn = async (req, res) => {
 				.status(403)
 				.json({ not_verified: true, message: "Verify your email" });
 		}
+		if (!tutor && !isUserUnverified) {
+			return res.status(400).json({ message: "Account not found" });
+		}
 		if (tutor.is_blocked) {
 			return res.status(401).json({
 				message:
@@ -511,9 +515,6 @@ const tutorSignIn = async (req, res) => {
 			});
 		}
 
-		if (!tutor && !isUserUnverified) {
-			return res.status(400).json({ message: "Account not found" });
-		}
 
 		const isMatch = await comparePassword(password, tutor?.password);
 

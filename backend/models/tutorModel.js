@@ -59,6 +59,7 @@ const TutorSchema = new mongoose.Schema(
 		},
 		social_profiles: {
 			type: Object,
+			default: {},
 		},
 		resetToken : {
 			type: String

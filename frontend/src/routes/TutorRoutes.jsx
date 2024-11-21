@@ -43,7 +43,7 @@ const TutorRoutes = () => {
 
 					{/* TEST ROUTES */}
 					<Route path="settings" element={<Settings />} />
-					<Route path="profile" element={<ProfileManagement />} />
+					<Route path="settings/profile" element={<ProfileManagement />} />
 					<Route path="my-courses" element={<MyCourses />} />
 
 

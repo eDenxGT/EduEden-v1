@@ -16,6 +16,12 @@ const tutorSlice = createSlice({
 			state.token = action.payload.token;
 			state.isAuthenticated = true
 		},
+		tutorUpdate(state, action) {
+			state.tutorData = {
+				...state.tutorData,
+				...action.payload
+			}
+		},
 		tutorChangeTheme(state, action) {
 			state.toggleTheme = action.payload;
 		},
@@ -29,6 +35,6 @@ const tutorSlice = createSlice({
 	},
 });
 
-export const {tutorChangeTheme, tutorLogin, tutorLogout} = tutorSlice.actions;
+export const {tutorChangeTheme, tutorUpdate, tutorLogin, tutorLogout} = tutorSlice.actions;
 
 export default tutorSlice.reducer;

@@ -10,11 +10,13 @@ dotenv.config();
 
 const authRouter = require("./routes/authRoute");
 const adminRouter = require("./routes/adminRoute");
+const tutorRouter = require("./routes/tutorRoute");
+const studentRouter = require("./routes/studentRoute");
+const uploadRouter = require("./routes/uploadRoute");
 
 const app = express();
-app.use(express.json());
-app.use(nocache());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(
 	cors({
 		origin: process.env.CLIENT_URL,
@@ -33,6 +35,11 @@ app.use(
 
 app.use("/auth", authRouter);
 app.use("/admin", adminRouter);
+app.use("/tutor", tutorRouter);
+app.use("/student", studentRouter);
+
+app.use("/api/upload", uploadRouter);
+
 
 mongoose
 	.connect(process.env.MONGO_URI)
