@@ -1,11 +1,10 @@
 import { useState } from "react";
 import Card from "../../CommonComponents/Card";
-import Button from "../../CommonComponents/Button";
 import AdvanceInformationPage from "./CreateCourse/AdvancedInformationPage";
 import LectureAddingPage from "./CreateCourse/LectureAddingPage";
 import PublishCoursePage from "./CreateCourse/PublishCoursePage";
 import BasicInformationPage from "./CreateCourse/BasicInformationPage";
-import { Layers, Moon, NotepadText, Sun, TvMinimalPlay, Upload } from "lucide-react";
+import { Layers, NotepadText, TvMinimalPlay, Upload } from "lucide-react";
 import { useSelector } from "react-redux";
 
 const CreateCourseLayout = () => {
