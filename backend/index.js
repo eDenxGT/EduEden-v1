@@ -13,6 +13,7 @@ const adminRouter = require("./routes/adminRoute");
 const tutorRouter = require("./routes/tutorRoute");
 const studentRouter = require("./routes/studentRoute");
 const uploadRouter = require("./routes/uploadRoute");
+const categoryRouter = require("./routes/categoryRoute");
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
@@ -37,6 +38,7 @@ app.use("/auth", authRouter);
 app.use("/admin", adminRouter);
 app.use("/tutor", tutorRouter);
 app.use("/student", studentRouter);
+app.use("/categories", categoryRouter);
 
 app.use("/api/upload", uploadRouter);
 

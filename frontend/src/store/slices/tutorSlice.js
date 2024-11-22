@@ -17,6 +17,8 @@ const tutorSlice = createSlice({
 			state.isAuthenticated = true
 		},
 		tutorUpdate(state, action) {
+			console.log("HELLO");
+			
 			state.tutorData = {
 				...state.tutorData,
 				...action.payload

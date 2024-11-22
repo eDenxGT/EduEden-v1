@@ -1,13 +1,17 @@
 import { Route, Routes } from "react-router-dom";
 import AdminSignIn from "../pages/admin/AuthPages/AdminSignIn";
 import AdminDashboard from "../components/AdminComponents/AdminDashboard";
-import TutorMangement from "../components/AdminComponents/SideBar/TutorMangement";
+import TutorManagement from "../components/AdminComponents/SideBar/TutorMangement";
 import StudentManagement from "../components/AdminComponents/SideBar/StudentManagement";
 // import AdminSettings from "../components/AdminComponents/SideBar/AdminSettings"
 import AdminLayout from "../pages/admin/AdminLayout";
 import PublicRoute from "../utils/ProtectRoutes/PublicRoute";
 import PrivateRoute from "../utils/ProtectRoutes/PrivateRoute";
 import Error404Page from "../pages/Others/Error404Page";
+import Categories from "../components/AdminComponents/Categories/Categories";
+import AddCategoriesModal from "../components/AdminComponents/Categories/AddCategoriesModal";
+import Orders from "../components/AdminComponents/SideBar/OrdersList";
+import CourseListing from "../components/AdminComponents/Courses/CourseListing";
 
 const AdminRoutes = () => {
 	return (
@@ -32,8 +36,12 @@ const AdminRoutes = () => {
 						</PrivateRoute>
 					}>
 					<Route path="dashboard" element={<AdminDashboard />} />
-					<Route path="tutors" element={<TutorMangement />} />
+					<Route path="tutors" element={<TutorManagement />} />
 					<Route path="students" element={<StudentManagement />} />
+					<Route path="categories" element={<Categories />} />
+					<Route path="categories/new" element={<AddCategoriesModal />} />
+					<Route path="orders" element={<Orders />} />
+					<Route path="courses" element={<CourseListing />} />
 					{/* <Route path="settings" element={<AdminSettings />} /> */}
 				</Route>
 

@@ -6,6 +6,7 @@ import studentReducer from "./slices/studentSlice";
 import tutorReducer from "./slices/tutorSlice";
 import adminReducer from './slices/adminSlice'
 import publicReducer from './slices/publicSlice'
+import categoryReducer from './slices/categoriesSlice'
 
 const persistConfig = {
 	key: "root",
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
 	tutor: tutorReducer,
 	admin: adminReducer,
 	public: publicReducer,
+	categories: categoryReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

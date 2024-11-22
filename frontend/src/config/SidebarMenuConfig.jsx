@@ -97,19 +97,9 @@ const navItems = {
 			link: "/admin/dashboard",
 		},
 		{
-			title: "Create New Courses",
-			icon: <PlusCircle className="h-5 w-5" />,
-			link: "/admin/courses/new",
-		},
-		{
 			title: "Courses",
 			icon: <BookOpen className="h-5 w-5" />,
 			link: "/admin/courses",
-		},
-		{
-			title: "Create New Category",
-			icon: <PlusCircle className="h-5 w-5" />,
-			link: "/admin/categories/new",
 		},
 		{
 			title: "Categories",

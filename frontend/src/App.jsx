@@ -10,6 +10,7 @@ import PublicRoutes from "./routes/PublicRoutes";
 import Error404Page from "./pages/Others/Error404Page";
 import PublicRoute from "./utils/ProtectRoutes/PublicRoute";
 import LoadingUi from "./utils/Modals/LoadingUi";
+import SpinnerLoadingModal from "./utils/Modals/SpinnerLoadingModal";
 
 function App() {
 	return (
@@ -41,6 +42,7 @@ function App() {
 				<Route path="/*" element={<Error404Page />} />
 			</Routes>
 			<LoadingUi />
+			<SpinnerLoadingModal />
 		</Router>
 	);
 }

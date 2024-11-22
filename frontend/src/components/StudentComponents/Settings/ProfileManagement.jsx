@@ -140,7 +140,7 @@ const ProfileManagement = () => {
 			const public_id = `student_avatar_${sanitizedName}_${Date.now()}`;
 			const folder = "profile_images";
 			const timestamp = Math.floor(Date.now() / 1000);
-         const transformation = "c_fill,w_150,h_150,g_face,r_max,q_auto,f_auto";
+         const transformation = "c_fill,w_500,h_500,g_face,r_max,f_auto";
 
 			const response = await axiosInstance.post(
 				"api/upload/generate-sign",

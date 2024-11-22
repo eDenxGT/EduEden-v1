@@ -9,6 +9,9 @@ import Error404Page from "../pages/Others/Error404Page";
 import Settings from "../components/TutorComponents/Settings/Settings";
 import ProfileManagement from "../components/TutorComponents/Settings/ProfileManagement";
 import MyCourses from "../components/TutorComponents/Courses/MyCourses";
+import BasicInformationPage from "../components/TutorComponents/Courses/CreateCourse/BasicInformationPage";
+import CreateCourseLayout from "../components/TutorComponents/Courses/CreateCourseLayout";
+import AdvanceInformationPage from "../components/TutorComponents/Courses/CreateCourse/AdvancedInformationPage";
 
 const TutorRoutes = () => {
 	return (
@@ -45,6 +48,8 @@ const TutorRoutes = () => {
 					<Route path="settings" element={<Settings />} />
 					<Route path="settings/profile" element={<ProfileManagement />} />
 					<Route path="my-courses" element={<MyCourses />} />
+
+					<Route path="courses/new" element={<CreateCourseLayout />} />
 
 
 
