@@ -5,6 +5,9 @@ const cors = require("cors");
 const chalk = require("chalk");
 const session = require("express-session");
 const nocache = require("nocache");
+const cookieParser = require("cookie-parser");
+const cleanUpExpiredTokens = require('./cron/cleanUpExpiredTokens')
+
 
 dotenv.config();
 
@@ -14,8 +17,14 @@ const tutorRouter = require("./routes/tutorRoute");
 const studentRouter = require("./routes/studentRoute");
 const uploadRouter = require("./routes/uploadRoute");
 const categoryRouter = require("./routes/categoryRoute");
+const courseRouter = require("./routes/courseRoute");
+const lectureRouter = require("./routes/lectureRoute");
+const wishlistRouter = require("./routes/wishlistRoute");
+const cartRouter = require("./routes/cartRoute");
+
 
 const app = express();
+app.use(cookieParser())
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(
@@ -39,6 +48,10 @@ app.use("/admin", adminRouter);
 app.use("/tutor", tutorRouter);
 app.use("/student", studentRouter);
 app.use("/categories", categoryRouter);
+app.use("/courses", courseRouter);
+app.use("/lectures", lectureRouter);
+app.use("/cart", cartRouter);
+app.use("/wishlist", wishlistRouter);
 
 app.use("/api/upload", uploadRouter);
 

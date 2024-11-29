@@ -11,6 +11,7 @@ const SelectInputField = ({
   placeholder = "Select...",
   isDarkMode = false,
   label,
+  key,
   ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);

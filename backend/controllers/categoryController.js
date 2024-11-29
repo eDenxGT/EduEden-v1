@@ -29,7 +29,7 @@ const createCategory = async (req, res) => {
 
 const getAllCategories = async (req, res) => {
 	try {
-		console.log("CATEGORIES FETCHING");
+		// console.log("CATEGORIES FETCHING");
 
 		const categories = await Category.find();
 
@@ -60,7 +60,7 @@ const deleteCategory = async (req, res) => {
 
 const searchCategory = async (req, res) => {
 	try {
-		console.log(req.query);
+		// console.log(req.query);
 
 		const { query } = req.query;
 		const categories = await Category.find({

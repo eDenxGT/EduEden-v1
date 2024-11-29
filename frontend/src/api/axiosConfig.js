@@ -1,4 +1,8 @@
 import axios from "axios";
+import {
+	attachRequestInterceptor,
+	attachResponseInterceptor,
+} from "./setupInterceptors";
 
 const baseURL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
@@ -7,6 +11,7 @@ const axiosInstance = axios.create({
 	headers: {
 		"Content-Type": "application/json",
 	},
+	withCredentials: true,
 });
 
 const axiosMultipartInstance = axios.create({
@@ -14,7 +19,15 @@ const axiosMultipartInstance = axios.create({
 	headers: {
 		"Content-Type": "multipart/form-data",
 	},
+	withCredentials: true,
 });
 
-export {  axiosInstance, axiosMultipartInstance };
+const refreshEndpoint = "/auth/refresh-token";
 
+attachRequestInterceptor(axiosInstance);
+attachRequestInterceptor(axiosMultipartInstance);
+
+attachResponseInterceptor(axiosInstance, refreshEndpoint);
+attachResponseInterceptor(axiosMultipartInstance, refreshEndpoint);
+
+export { axiosInstance, axiosMultipartInstance };

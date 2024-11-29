@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const lectureSchema = new mongoose.Schema({
    title: {
       type: String,
@@ -7,12 +8,16 @@ const lectureSchema = new mongoose.Schema({
       type: String,
 		required: true,
 	},
+	lecture_id: {
+		type: String,
+		required: true
+	},
 	duration: {
-      type: mongoose.Schema.Types.Decimal128,
+      type: String,
 		required: true,
 	},
    course_id: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: "Course",
       required: true,
    },

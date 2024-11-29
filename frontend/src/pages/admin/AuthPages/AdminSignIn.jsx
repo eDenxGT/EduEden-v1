@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../../api/axiosConfig";
 import Spinner from "../../../utils/Spinner/Spinner";
 import { adminLogin } from "../../../store/slices/adminSlice";
+import storeAccessToken from "../../../api/storeAccessToken";
 
 export default function AdminSignIn() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -64,8 +65,13 @@ export default function AdminSignIn() {
 				"/auth/admin/signin",
 				formData
 			);
-			if (response.status === 200) {
+			if (response?.data?.success === true) {
+				const accessToken = response?.data?.accessToken;
+				if (!accessToken) {
+					throw new Error("Access token not provided in response.");
+				}
 				toast.success("Sign-in successful");
+				storeAccessToken("admin", accessToken, 13);
 				dispatch(adminLogin(response.data));
 				setTimeout(() => {
 					navigate("/admin/dashboard");

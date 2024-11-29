@@ -6,16 +6,30 @@ import { BookOpenText } from "lucide-react";
 import { fetchCategories } from "../../../../store/slices/categoriesSlice";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { resetFormData, updateFormData } from "../../../../store/slices/newCourse";
+import { useNavigate } from "react-router-dom";
 const BasicInformationPage = ({
-	formData,
-	updateFormData,
 	goToNextPage,
 	isDarkMode,
 }) => {
 	const dispatch = useDispatch();
+	const navigate = useNavigate()
+	const {...formData} = useSelector((state) => state.newCourse);
 	const handleChange = (field, value) => {
-		updateFormData({ [field]: value });
-	};
+		dispatch(updateFormData({ name: field, value }));
+	 };
+
+	 const handleCancelCreateCourse = async() =>{
+		try {
+			await dispatch(resetFormData()).unwrap()
+			goToNextPage(1);
+		} catch (error) {
+			console.log(error)
+		} finally {
+			navigate('/tutor/my-courses')
+		}	
+	 }
+	 
 
   const { categories } = useSelector((state) => state.categories);
 
@@ -29,7 +43,7 @@ const BasicInformationPage = ({
 				<InputField
 					label="Title"
 					placeholder="Your course title"
-					value={formData.title}
+					value={formData?.title}
 					onChange={(e) => handleChange("title", e.target.value)}
 					icon={<BookOpenText size={18} />}
 					className={`${
@@ -41,8 +55,8 @@ const BasicInformationPage = ({
 				<div className="grid grid-cols-2 gap-4">
 					<SelectInputField
 						label="Course Category"
-						options={categories.map((category)=> category.title)}
-						value={formData.category}
+						options={categories.map((category)=> category?.title)}
+						value={formData?.category}
 						onChange={(value) => handleChange("category", value)}
 						isDarkMode={isDarkMode}
 						placeholder="Select category"
@@ -50,7 +64,7 @@ const BasicInformationPage = ({
 					<SelectInputField
 						label="Course Language"
 						options={["English", "Malayalam"]}
-						value={formData.language}
+						value={formData?.language}
 						onChange={(value) => handleChange("language", value)}
 						isDarkMode={isDarkMode}
 						placeholder="Select language"
@@ -65,7 +79,7 @@ const BasicInformationPage = ({
 							"2 Months",
 							"3 Months",
 						]}
-						value={formData.duration}
+						value={formData?.duration}
 						onChange={(value) => handleChange("duration", value)}
 						isDarkMode={isDarkMode}
 						placeholder="Select duration"
@@ -78,7 +92,7 @@ const BasicInformationPage = ({
 							"Advanced",
 							"Master",
 						]}
-						value={formData.level}
+						value={formData?.level}
 						onChange={(value) => handleChange("level", value)}
 						isDarkMode={isDarkMode}
 						placeholder="Select level"
@@ -86,6 +100,7 @@ const BasicInformationPage = ({
 				</div>
 				<div className="flex justify-between mt-6">
 					<Button
+					onClick={handleCancelCreateCourse}
 						text="Cancel"
 						className={`${
 							isDarkMode

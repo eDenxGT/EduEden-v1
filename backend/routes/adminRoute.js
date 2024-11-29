@@ -1,5 +1,6 @@
 const express = require("express");
 const adminRouter = express.Router();
+const { verifyAdmin } = require("../middlewares/auth");
 
 const {
 	getTutors,
@@ -11,11 +12,11 @@ const {
 } = require("../controllers/adminController");
 
 adminRouter
-	.get("/get-tutors", getTutors)
-	.post("/toggle-tutor-status", toggleTutorStatus)
-	.get("/get-students", getStudents)
-	.post("/toggle-student-status", toggleStudentStatus)
-	.get("/search-students", searchStudents)
-	.get("/search-tutors", searchTutors);
+	.get("/get-tutors", verifyAdmin, getTutors)
+	.post("/toggle-tutor-status", verifyAdmin, toggleTutorStatus)
+	.get("/get-students", verifyAdmin, getStudents)
+	.post("/toggle-student-status", verifyAdmin, toggleStudentStatus)
+	.get("/search-students", verifyAdmin, searchStudents)
+	.get("/search-tutors", verifyAdmin, searchTutors);
 
 module.exports = adminRouter;

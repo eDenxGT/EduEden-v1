@@ -13,6 +13,7 @@ import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
 import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
 import { useDispatch } from "react-redux";
 import { studentLogin } from "../../../store/slices/studentSlice";
+import storeAccessToken from "../../../api/storeAccessToken";
 
 const SignIn = () => {
 	const [formData, setFormData] = useState({
@@ -69,7 +70,13 @@ const SignIn = () => {
 
 		try {
 			const response = await axiosInstance.post("/auth/signin", formData);
-			if (response.status === 200) {
+			if (response?.data?.success === true) {
+				const accessToken = response?.data?.accessToken;
+				if (!accessToken) {
+					throw new Error("Access token not provided in response.");
+				}
+				toast.success(response?.data?.message);
+				storeAccessToken("student", accessToken, 13);
 				const data = response?.data;
 				dispatch(studentLogin(data));
 				localStorage.removeItem("isOtpModalOpen");

@@ -10,10 +10,9 @@ import Settings from "../components/TutorComponents/Settings/Settings";
 import ProfileManagement from "../components/TutorComponents/Settings/ProfileManagement";
 import MyCourses from "../components/TutorComponents/Courses/MyCourses";
 import CreateCourseLayout from "../components/TutorComponents/Courses/CreateCourseLayout";
-import LectureVideoModal from "../components/TutorComponents/Courses/CreateCourse/Modals/VideoModal";
-import LectureDescriptionModal from "../components/TutorComponents/Courses/CreateCourse/Modals/DescriptionModal";
-import LectureNotesModal from "../components/TutorComponents/Courses/CreateCourse/Modals/NotesModal";
-import ThumbnailUploadModal from "../components/TutorComponents/Courses/CreateCourse/Modals/ThumbnailModal";
+import CourseDetails from "../components/TutorComponents/Courses/CourseDetails";
+import EditCourseLayout from "../components/TutorComponents/Courses/EditCourseLayout";
+import CoursePlayer from "../components/TutorComponents/Courses/CoursePlayer";
 
 const TutorRoutes = () => {
 	return (
@@ -39,7 +38,7 @@ const TutorRoutes = () => {
 					path="/"
 					element={
 						<PrivateRoute
-							allowedRoles={["tutor"]}
+							allowedRole="tutor"
 							redirectTo={"/tutor/signin"}>
 							<TutorLayout />
 						</PrivateRoute>
@@ -50,12 +49,12 @@ const TutorRoutes = () => {
 					<Route path="settings" element={<Settings />} />
 					<Route path="settings/profile" element={<ProfileManagement />} />
 					<Route path="my-courses" element={<MyCourses />} />
+					<Route path="my-courses/:course_id" element={<CourseDetails />} />
+					<Route path="my-courses/:course_id/lectures/:lecture_id" element={<CoursePlayer />} />
+					<Route path="my-courses/edit/:course_id" element={<EditCourseLayout />} />
+					{/* <Route path="my-courses/dummy" element={<DummyDetails />} /> */}
 
 					<Route path="courses/new" element={<CreateCourseLayout />} />
-					<Route path="courses/test" element={<LectureVideoModal isOpen={true} />} />
-					<Route path="courses/note" element={<LectureNotesModal isOpen={true} />} />
-					<Route path="courses/desc" element={<LectureDescriptionModal isOpen={true} />} />
-					<Route path="courses/thumb" element={<ThumbnailUploadModal isOpen={true} />} />
 
 
 

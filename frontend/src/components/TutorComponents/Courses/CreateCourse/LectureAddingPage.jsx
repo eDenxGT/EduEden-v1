@@ -1,124 +1,148 @@
 /* eslint-disable react/prop-types */
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Button from "../../../CommonComponents/Button";
 import SelectInputField from "../../../CommonComponents/SelectInputField";
-import { Edit, Trash } from "lucide-react";
+import { Trash } from "lucide-react";
+import DescriptionModal from "./Modals/DescriptionModal";
+import NotesModal from "./Modals/NotesModal";
+import ThumbnailModal from "./Modals/ThumbnailModal";
+import LectureVideoModal from "./Modals/VideoModal";
+import {
+	addLecture,
+	updateLecture,
+	removeLecture,
+} from "../../../../store/slices/newCourse";
 
-const LectureAddingPage = ({
-	formData,
-	updateFormData,
-	goToPreviousPage,
-	goToNextPage,
-	isDarkMode,
-}) => {
-	const handleAddLecture = () => {
-		const newLecture = {
-			id: Date.now()+Math.floor(Math.random() * 100000+ Date.now() +900000),
-			title: "New Lecture",
-			contents: [],
-		};
-		updateFormData({
-			lectures: [...(formData.lectures || []), newLecture],
-		});
+const LectureAddingPage = ({ goToPreviousPage, goToNextPage, isDarkMode }) => {
+	const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+	const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
+	const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+	const [isThumbnailModalOpen, setIsThumbnailModalOpen] = useState(false);
+	const [selectedLectureId, setSelectedLectureId] = useState(null);
+
+	const { lectures } = useSelector((state) => state.newCourse);
+	useEffect(() => {
+		console.log(lectures);
+	});
+	const dispatch = useDispatch();
+
+	const closeModals = () => {
+		setIsVideoModalOpen(false);
+		setIsDescriptionModalOpen(false);
+		setIsNotesModalOpen(false);
+		setIsThumbnailModalOpen(false);
+		setSelectedLectureId(null);
 	};
 
-	const handleUpdateLecture = (lectureId, field, value) => {
-		const updatedLectures = formData.lectures.map((lecture) =>
-			lecture.id === lectureId ? { ...lecture, [field]: value } : lecture
+	const handleOptionChange = (option, lectureId) => {
+		switch (option) {
+			case "Attach Video":
+				setSelectedLectureId(lectureId);
+				setIsVideoModalOpen(true);
+				break;
+			case "Description":
+				setSelectedLectureId(lectureId);
+				setIsDescriptionModalOpen(true);
+				break;
+			case "Lecture Notes":
+				setSelectedLectureId(lectureId);
+				setIsNotesModalOpen(true);
+				break;
+			case "Thumbnail":
+				setSelectedLectureId(lectureId);
+				setIsThumbnailModalOpen(true);
+				break;
+			default:
+				console.log("Invalid option selected.");
+				break;
+		}
+	};
+
+	const handleAddLecture = () => {
+		dispatch(
+			addLecture({
+				title: `Lecture ${lectures.length + 1}`,
+				description: "",
+				duration: "",
+				pdfNotes: "",
+			})
 		);
-		updateFormData({ lectures: updatedLectures });
 	};
 
 	const handleDeleteLecture = (lectureId) => {
-		const updatedLectures = formData.lectures.filter(
-			(lecture) => lecture.id !== lectureId
+		const confirmDelete = confirm(
+			"Are you sure you want to delete this lecture?"
 		);
-		updateFormData({ lectures: updatedLectures });
+		if (confirmDelete) {
+			dispatch(removeLecture(lectureId));
+		}
 	};
 
-  const handleOptionChange = (option, lectureId) => {
-    switch (option) {
-      case "Attach Video" : 
-      console.log(`video adding to lecture ${lectureId}`)
-      break;
-      case "Description" : 
-      console.log("description adding")
-      break;
-      case "Lecture Notes" : 
-      console.log("notes adding")
-      break;
-      default :
-      console.log("error")
-      break;
-    }
-  }
+	const handleLectureTitleChange = (e, lectureId) => {
+		dispatch(
+			updateLecture({
+				lectureId: lectureId,
+				updatedData: { title: e.target.value },
+			})
+		);
+	};
 
 	return (
 		<div className="space-y-6">
 			<div className="space-y-4">
-				{formData.lectures &&
-					formData.lectures.map((lecture) => (
-						<div
-							key={lecture.id}
-							className={`flex justify-between items-center border p-3 rounded-md ${
-								isDarkMode
-									? "bg-gray-800 border-gray-700"
-									: "bg-white border-gray-300"
-							}`}>
-							<span
-								className={`flex-grow ${
-									isDarkMode ? "text-white" : "text-gray-900"
+				{lectures.map((lecture) => (
+					<div
+						key={lecture._id}
+						className={`flex justify-between items-center border rounded-none ${
+							isDarkMode
+								? "bg-gray-800 border-gray-700"
+								: "bg-white border-gray-300"
+						}`}>
+						<input
+							placeholder="Enter lecture name"
+							className={`flex-grow p-4 ${
+								isDarkMode ? "text-white" : "text-gray-900"
+							}`}
+							value={lecture.title}
+							onChange={(e) =>
+								handleLectureTitleChange(e, lecture._id)
+							}
+						/>
+						<div className="flex space-x-2 items-center">
+							<SelectInputField
+								options={[
+									"Attach Video",
+									"Description",
+									"Lecture Notes",
+									"Thumbnail",
+								]}
+								value=""
+								onChange={(option) =>
+									handleOptionChange(option, lecture._id)
+								}
+								isDarkMode={isDarkMode}
+								placeholder="Contents"
+								className="max-w-fit rounded-none"
+								listClassName="w-44 max-w-max"
+							/>
+
+							<button
+								onClick={() => handleDeleteLecture(lecture._id)}
+								className={`p-2 pr-4 rounded-full ${
+									isDarkMode
+										? "text-gray-400 hover:text-gray-300"
+										: "text-gray-600 hover:text-gray-800"
 								}`}>
-								{lecture.title}
-							</span>
-							<div className="flex space-x-2 items-center">
-								<SelectInputField
-									options={[
-										"Attach Video",
-										"Description",
-										"Lecture Notes",
-									]}
-									value=""
-									onChange={(option) => {
-										handleOptionChange(option, lecture.id);
-									}}
-									isDarkMode={isDarkMode}
-									placeholder="Contents"
-									className="max-w-fit "
-									listClassName="w-44 max-w-max"
-								/>
-								<button
-									onClick={() =>
-										handleUpdateLecture(
-											lecture.id,
-											"title",
-											"Updated Title"
-										)
-									}
-									className={`p-2 rounded-full ${
-										isDarkMode
-											? "text-gray-400 hover:text-gray-300"
-											: "text-gray-600 hover:text-gray-800"
-									}`}>
-									<Edit size={18} />
-								</button>
-								<button
-									onClick={() =>
-										handleDeleteLecture(lecture.id)
-									}
-									className={`p-2 rounded-full ${
-										isDarkMode
-											? "text-gray-400 hover:text-gray-300"
-											: "text-gray-600 hover:text-gray-800"
-									}`}>
-									<Trash size={18} />
-								</button>
-							</div>
+								<Trash size={18} />
+							</button>
 						</div>
-					))}
+					</div>
+				))}
 				<div className="flex justify-center">
 					<Button
 						text="Add Lecture"
-						className={`px-4 py-2 bg-orange-600 text-white hover:opacity-80 max-w-fit`}
+						className="px-4 py-2 bg-orange-600 text-white hover:opacity-80 max-w-fit"
 						onClick={handleAddLecture}
 					/>
 				</div>
@@ -143,6 +167,38 @@ const LectureAddingPage = ({
 					onClick={goToNextPage}
 				/>
 			</div>
+			{/* Modals */}
+			{isVideoModalOpen && (
+				<LectureVideoModal
+					lectureId={selectedLectureId}
+					onClose={closeModals}
+					isOpen={isVideoModalOpen}
+				/>
+			)}
+			{isDescriptionModalOpen && (
+				<DescriptionModal
+					type="Description"
+					lectureId={selectedLectureId}
+					onClose={closeModals}
+					isOpen={isDescriptionModalOpen}
+				/>
+			)}
+			{isNotesModalOpen && (
+				<NotesModal
+					type="Notes"
+					isOpen={isNotesModalOpen}
+					lectureId={selectedLectureId}
+					onClose={closeModals}
+				/>
+			)}
+			{isThumbnailModalOpen && (
+				<ThumbnailModal
+					type="Thumbnail"
+					isOpen={isThumbnailModalOpen}
+					lectureId={selectedLectureId}
+					onClose={closeModals}
+				/>
+			)}
 		</div>
 	);
 };

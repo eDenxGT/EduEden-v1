@@ -1,31 +1,52 @@
 import { useState, useEffect } from "react";
 import { debounce } from "lodash";
 import CourseCard from "../../CommonComponents/CourseCard";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+import { deleteCourseById, fetchCourses } from "../../../store/thunks/courseThunks";
+import { useNavigate } from "react-router-dom";
+import ConfirmationModal from "../../../utils/Modals/ConfirmtionModal";
+import SelectInputField from "../../CommonComponents/SelectInputField";
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { fetchCategories } from "../../../store/slices/categoriesSlice";
 
 const CourseListing = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [sortBy, setSortBy] = useState("latest");
   const [category, setCategory] = useState("all");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const { courses } = useSelector((state) => state.courses);
+  const {categories} = useSelector(state=>state.categories)
+
+  const isDarkMode = useSelector(state => state.admin.toggleTheme);
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const coursesPerPage = 12; // Adjust this value as needed
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchAllCourses = async () => {
       try {
-        // Replace this with your actual API call
-        const response = await fetch("/api/courses");
-        const data = await response.json();
-        setCourses(data.courses);
-        setFilteredCourses(data.courses);
+        await dispatch(fetchCourses()).unwrap();
       } catch (error) {
-        console.error("Error fetching courses:", error);
-        // You can add a toast notification here if you have a toast library
+        console.error("Fetch Enrolled Courses error:", error);
+        toast.error("Failed to load your courses. Please try again.");
       }
     };
+    fetchAllCourses();
+  }, [dispatch]);
+  useEffect(() => {
+    
+    setFilteredCourses(courses);
+  }, [courses])
 
-    fetchCourses();
-  }, []);
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   const handleSearch = debounce((query) => {
     const filtered = courses.filter((course) =>
@@ -41,175 +62,175 @@ const CourseListing = () => {
     handleSearch(value);
   };
 
-  const handleSortChange = (e) => {
-    setSortBy(e.target.value);
+  const handleSortChange = (value) => {
+    setSortBy(value);
     // Implement sorting logic here
   };
 
-  const handleCategoryChange = (e) => {
-    setCategory(e.target.value);
+  const handleCategoryChange = (value) => {
+    setCategory(value);
     // Implement category filtering logic here
   };
 
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">All Courses</h1>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={searchQuery}
-                onChange={handleSearchInputChange}
-              />
-              <svg
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                ></path>
-              </svg>
-            </div>
-            <button className="text-gray-600 hover:text-gray-800">
-              <svg
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                ></path>
-              </svg>
-            </button>
-            <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-800">
-              <img
-                src="/placeholder.svg"
-                alt="User"
-                className="w-8 h-8 rounded-full"
-              />
-              <svg
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 9l-7 7-7-7"
-                ></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
+  const onClose = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedCourseId(null);
+  };
 
+  const onConfirm = async () => {
+    try {
+      await dispatch(deleteCourseById(selectedCourseId)).unwrap();
+      onClose();
+      navigate('/admin/courses');
+      toast.success("Course deleted successfully!");
+    } catch (error) {
+      console.log("Delete Course By Id error : ", error);
+      toast.error("Deleting course failed!");
+    }
+  };
+
+  const indexOfLastCourse = currentPage * coursesPerPage;
+  const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
+  const currentCourses = (searchQuery ? filteredCourses : courses).slice(indexOfFirstCourse, indexOfLastCourse);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const primaryColor = isDarkMode
+    ? "bg-blue-600 hover:bg-blue-700"
+    : "bg-orange-500 hover:bg-orange-600";
+  const secondaryColor = isDarkMode
+    ? "bg-gray-700 hover:bg-gray-600"
+    : "bg-gray-200 hover:bg-gray-300";
+
+  return (
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
       <main className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <div className="relative">
-            <svg
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              ></path>
-            </svg>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+          <div className="relative w-full md:w-auto">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
               placeholder="Search in your courses..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full md:w-64 pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+                isDarkMode
+                  ? 'bg-gray-800 border-gray-700 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
+              value={searchQuery}
+              onChange={handleSearchInputChange}
             />
           </div>
-          <div className="flex space-x-4">
-            <select
-              className="px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
+            <SelectInputField
+              options={["latest", "oldest", "price-low-high", "price-high-low"]}
               value={sortBy}
               onChange={handleSortChange}
-            >
-              <option value="latest">Latest</option>
-              <option value="oldest">Oldest</option>
-              <option value="price-low-high">Price: Low to High</option>
-              <option value="price-high-low">Price: High to Low</option>
-            </select>
-            <select
-              className="px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Sort By"
+              isDarkMode={isDarkMode}
+              className="w-full md:w-40"
+            />
+            <SelectInputField
+              options={categories.map((category) => category.title)}
               value={category}
               onChange={handleCategoryChange}
-            >
-              <option value="all">All Category</option>
-              <option value="development">Development</option>
-              <option value="business">Business</option>
-              <option value="design">Design</option>
-            </select>
-            <select className="px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="4-star">4 Star & Up</option>
-              <option value="3-star">3 Star & Up</option>
-              <option value="2-star">2 Star & Up</option>
-              <option value="1-star">1 Star & Up</option>
-            </select>
+              placeholder="Category"
+              isDarkMode={isDarkMode}
+              className="w-full md:w-40"
+            />
+            <SelectInputField
+              options={["4-star", "3-star", "2-star", "1-star"]}
+              value="4-star"
+              onChange={() => {}}
+              placeholder="Rating"
+              isDarkMode={isDarkMode}
+              className="w-full md:w-40"
+            />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredCourses.map((course) => (
-            <CourseCard key={course.id} course={course} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {currentCourses.map((course) => (
+            <CourseCard
+              key={course.course_id}
+              onClick={() => navigate(`/admin/courses/${course.course_id}`)}
+              userRole="admin"
+              course={course}
+              deleteCourseById={(course_id) => {
+                setIsDeleteModalOpen(true);
+                setSelectedCourseId(course_id);
+              }}
+              isDarkMode={isDarkMode}
+            />
           ))}
         </div>
 
-        <div className="mt-8 flex justify-center">
-          <nav className="inline-flex rounded-md shadow">
-            <button className="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              Previous
-            </button>
-            {[1, 2, 3, 4, 5].map((page) => (
-              <button
-                key={page}
-                className={`px-3 py-2 border border-gray-300 bg-white text-sm font-medium ${
-                  currentPage === page
-                    ? "text-blue-600 bg-blue-50"
-                    : "text-gray-500 hover:bg-gray-50"
-                }`}
-                onClick={() => setCurrentPage(page)}
-              >
-                {page}
-              </button>
-            ))}
-            <button className="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              Next
-            </button>
-          </nav>
+        <div className="mt-8 flex justify-center items-center">
+          <button
+            onClick={() => paginate(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`mx-1 px-3 py-1 rounded-full flex items-center ${secondaryColor} ${
+              currentPage === 1
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+          >
+            <ChevronLeft className="mr-2" /> Prev
+          </button>
+          {Array.from(
+            { length: Math.ceil(courses.length / coursesPerPage) },
+            (_, i) => {
+              if (
+                i === 0 ||
+                i === Math.ceil(courses.length / coursesPerPage) - 1 ||
+                (i >= currentPage - 2 && i <= currentPage)
+              ) {
+                return (
+                  <button
+                    key={i}
+                    onClick={() => paginate(i + 1)}
+                    className={`mx-1 w-8 h-8 rounded-full flex items-center justify-center ${
+                      currentPage === i + 1
+                        ? primaryColor + " text-white"
+                        : secondaryColor + (isDarkMode ? " text-white" : " text-gray-800")
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                );
+              } else if (i === currentPage - 3 || i === currentPage + 1) {
+                return (
+                  <span key={i} className="mx-1">
+                    ...
+                  </span>
+                );
+              }
+              return null;
+            }
+          )}
+          <button
+            onClick={() => paginate(currentPage + 1)}
+            disabled={currentPage === Math.ceil(courses.length / coursesPerPage)}
+            className={`mx-1 px-3 py-1 rounded-full flex items-center ${secondaryColor} ${
+              currentPage === Math.ceil(courses.length / coursesPerPage)
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+          >
+            Next <ChevronRight className="ml-2" />
+          </button>
         </div>
       </main>
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={onClose}
+        onConfirm={onConfirm}
+        confirmText="Delete"
+        cancelText="Cancel"
+        title="Delete Course"
+        icon="danger"
+        description="Are you sure you want to delete this course?"
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 };

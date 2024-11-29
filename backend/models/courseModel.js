@@ -10,8 +10,12 @@ const courseSchema = new mongoose.Schema({
 		ref: "Category",
 		required: true,
 	},
+	course_id: {
+		type: String,
+		required: true,
+	},
 	tutor_id: {
-		type: mongoose.Schema.Types.ObjectId,
+		type: String,
 		ref: "Tutor",
 		required: true,
 	},
@@ -23,24 +27,16 @@ const courseSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
-	created_at: {
-		type: Date,
-		default: Date.now,
-	},
-	updated_at: {
-		type: Date,
-		default: Date.now,
-	},
 	course_thumbnail: {
 		type: String,
 		required: true,
 	},
-	description: {
+	course_description: {
 		type: String,
 		required: true,
 	},
 	price: {
-		type: mongoose.Schema.Types.Decimal128,
+		type: Number,
 		required: true,
 	},
 	enrolled_count: {
@@ -48,12 +44,29 @@ const courseSchema = new mongoose.Schema({
 		default: 0,
 	},
 	duration: {
-		type: Number,
+		type: String,
 		required: true,
 	},
 	is_listed: {
 		type: Boolean,
 		default: true,
+	},
+	average_rating: {
+		type: Number,
+		default: 0,
+	},
+	ratings_count: {
+		type: Number,
+		default: 0,
+	},
+	ratings: [Number],
+	created_at: {
+		type: Date,
+		default: Date.now,
+	},
+	updated_at: {
+		type: Date,
+		default: Date.now,
 	},
 });
 

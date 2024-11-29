@@ -3,23 +3,25 @@ const UnverifiedUser = require("../models/unverifiedUserModel");
 const Student = require("../models/studentModel");
 const Tutor = require("../models/tutorModel");
 const Admin = require("../models/adminModel");
+const RefreshToken = require("../models/refreshTokenModel");
 
 //* ====== Import Modules and Functions ====== *//
 const jwt = require("jsonwebtoken");
-const { hashPassword, comparePassword } = require("../utils/passwordUtils");
 const bcrypt = require("bcryptjs");
 const dotenv = require("dotenv");
-const { sendOTPEmail, sendPasswordResetEmail } = require("../utils/emailUtils");
 const { OAuth2Client } = require("google-auth-library");
 const chalk = require("chalk");
 dotenv.config();
+const { hashPassword, comparePassword } = require("../utils/passwordUtils");
+const { sendOTPEmail, sendPasswordResetEmail } = require("../utils/emailUtils");
+const storeToken = require("../utils/JWT/storeCookie");
+const {
+	generateAccessToken,
+	generateRefreshToken,
+} = require("../utils/JWT/generateTokens");
 
 const FRONTEND_URL = process.env.CLIENT_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
-
-const createToken = (id) => {
-	return jwt.sign({ id }, JWT_SECRET, { expiresIn: "1d" });
-};
 
 const generateOTP = () => {
 	return Math.floor(100000 + Math.random() * 900000).toString();
@@ -77,42 +79,39 @@ const studentSignUp = async (req, res) => {
 const studentSignIn = async (req, res) => {
 	try {
 		const { email, password, remember } = req.body;
+
 		const student = await Student.findOne({
 			$or: [{ email }, { user_name: email }],
 		});
+
 		const isTutorAccount = await Tutor.findOne({
 			$or: [{ email }, { user_name: email }],
 		});
+
 		if (isTutorAccount) {
 			return res
-			.status(400)
-			.json({ message: "This account is a tutor account" });
+				.status(400)
+				.json({ message: "This account is a tutor account" });
 		}
-		
+
 		const isUserUnverified = await UnverifiedUser.findOne({
 			$or: [{ email }, { user_name: email }],
 		});
 
 		if (isUserUnverified && isUserUnverified.role !== "student") {
 			return res
-			.status(400)
-			.json({ message: "This account is a tutor account" });
+				.status(400)
+				.json({ message: "This account is a tutor account" });
 		}
+
 		if (isUserUnverified) {
 			return res
 				.status(403)
 				.json({ not_verified: true, message: "Verify your email" });
 		}
-		
 
 		if (!student && !isUserUnverified) {
 			return res.status(400).json({ message: "Account not found" });
-		}
-		if (student.is_blocked) {
-			return res.status(401).json({
-				message:
-					"Your account has been blocked. Please contact the support team.",
-			});
 		}
 
 		const isMatch = await comparePassword(password, student?.password);
@@ -121,17 +120,57 @@ const studentSignIn = async (req, res) => {
 			return res.status(400).json({ message: "Incorrect Password" });
 		}
 
-		const token = jwt.sign({ id: student._id }, JWT_SECRET, {
-			expiresIn: remember ? "7d" : "1d",
+		if (student.is_blocked) {
+			return res.status(401).json({
+				message:
+					"Your account has been blocked. Please contact the support team.",
+			});
+		}
+
+		const studentDataToGenerateToken = {
+			_id: student?._id,
+			email: student?.email,
+			role: "student",
+		};
+
+		const accessToken = generateAccessToken(
+			"student",
+			studentDataToGenerateToken
+		);
+		const refreshToken = generateRefreshToken(
+			"student",
+			studentDataToGenerateToken
+		);
+		console.log(accessToken, refreshToken);
+
+		const newRefreshToken = new RefreshToken({
+			token: refreshToken,
+			user: studentDataToGenerateToken?.role,
+			user_id: studentDataToGenerateToken?._id,
+			expires_at: remember
+				? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+				: new Date(Date.now() + 24 * 60 * 60 * 1000),
 		});
+		const savedToken = await newRefreshToken.save();
 
 		const { password: _, ...studentDetails } = student.toObject();
 
-		res.status(200).json({
-			message: "Student logged in successfully",
-			token,
-			studentData: studentDetails,
-		});
+		if (savedToken) {
+			storeToken(
+				"studentRefreshToken",
+				refreshToken,
+				remember ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
+				res
+			);
+
+			res.status(200).json({
+				success: true,
+				message: "Student login successfully",
+				studentData: studentDetails,
+				accessToken,
+				role: "student",
+			});
+		}
 	} catch (error) {
 		console.log("SignIn Error: ", error);
 		res.status(500).json({ message: "Internal server error" });
@@ -207,10 +246,12 @@ const resendOtp = async (req, res) => {
 				.json({ success: false, message: "User not found." });
 		}
 
-		if(unverifiedUser.role !== role && role === "student") {
-			return res.status(400).json({message: "This is a Tutor Account"})
+		if (unverifiedUser.role !== role && role === "student") {
+			return res.status(400).json({ message: "This is a Tutor Account" });
 		} else if (unverifiedUser.role !== role && role === "tutor") {
-			return res.status(400).json({message: "This is a Student Account"})
+			return res
+				.status(400)
+				.json({ message: "This is a Student Account" });
 		}
 
 		const remainingTime = unverifiedUser.otpExpiry - Date.now();
@@ -481,11 +522,11 @@ const tutorSignIn = async (req, res) => {
 			$or: [{ email }, { user_name: email }],
 		});
 
-		const isStudent = await Student.findOne({
+		const isStudentAccount = await Student.findOne({
 			$or: [{ email }, { user_name: email }],
 		});
 
-		if (isStudent) {
+		if (isStudentAccount) {
 			return res
 				.status(400)
 				.json({ message: "This account is a student account" });
@@ -494,10 +535,11 @@ const tutorSignIn = async (req, res) => {
 		const isUserUnverified = await UnverifiedUser.findOne({
 			$or: [{ email }, { user_name: email }],
 		});
+
 		if (isUserUnverified && isUserUnverified.role !== "tutor") {
 			return res
-			.status(400)
-			.json({ message: "This account is a student account" });
+				.status(400)
+				.json({ message: "This account is a student account" });
 		}
 
 		if (isUserUnverified) {
@@ -505,9 +547,11 @@ const tutorSignIn = async (req, res) => {
 				.status(403)
 				.json({ not_verified: true, message: "Verify your email" });
 		}
+
 		if (!tutor && !isUserUnverified) {
 			return res.status(400).json({ message: "Account not found" });
 		}
+
 		if (tutor.is_blocked) {
 			return res.status(401).json({
 				message:
@@ -515,24 +559,55 @@ const tutorSignIn = async (req, res) => {
 			});
 		}
 
-
 		const isMatch = await comparePassword(password, tutor?.password);
-
 		if (!isMatch) {
 			return res.status(400).json({ message: "Incorrect Password" });
 		}
 
-		const token = jwt.sign({ id: tutor._id }, JWT_SECRET, {
-			expiresIn: remember ? "7d" : "1d",
+		const tutorDataToGenerateToken = {
+			_id: tutor?._id,
+			email: tutor?.email,
+			role: "tutor",
+		};
+
+		const accessToken = generateAccessToken(
+			"tutor",
+			tutorDataToGenerateToken
+		);
+		const refreshToken = generateRefreshToken(
+			"tutor",
+			tutorDataToGenerateToken
+		);
+
+		const newRefreshToken = new RefreshToken({
+			token: refreshToken,
+			user: tutorDataToGenerateToken?.role,
+			user_id: tutorDataToGenerateToken?._id,
+			expires_at: remember
+				? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+				: new Date(Date.now() + 24 * 60 * 60 * 1000),
 		});
+
+		const savedToken = await newRefreshToken.save();
 
 		const { password: _, ...tutorDetails } = tutor.toObject();
 
-		res.status(200).json({
-			message: "Tutor logged in successfully",
-			token,
-			tutorData: tutorDetails,
-		});
+		if (savedToken) {
+			storeToken(
+				"tutorRefreshToken",
+				refreshToken,
+				remember ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
+				res
+			);
+
+			return res.status(200).json({
+				success: true,
+				message: "Tutor logged in successfully",
+				tutorData: tutorDetails,
+				accessToken,
+				role: "tutor",
+			});
+		}
 	} catch (error) {
 		console.log("SignIn Error: ", error);
 		res.status(500).json({ message: "Internal server error" });
@@ -554,22 +629,173 @@ const adminSignIn = async (req, res) => {
 		if (!isMatch) {
 			return res.status(400).json({ message: "Incorrect Password" });
 		}
+		const adminDataToGenerateToken = {
+			_id: admin?._id,
+			email: admin?.email,
+			role: "admin",
+		};
 
-		const token = jwt.sign({ id: admin._id }, JWT_SECRET, {
-			expiresIn: "1d",
+		const accessToken = generateAccessToken(
+			"admin",
+			adminDataToGenerateToken
+		);
+		const refreshToken = generateRefreshToken(
+			"admin",
+			adminDataToGenerateToken
+		);
+		// console.log(accessToken,"fffe", refreshToken);
+
+		const newRefreshToken = new RefreshToken({
+			token: refreshToken,
+			user: adminDataToGenerateToken?.role,
+			user_id: adminDataToGenerateToken?._id,
+			expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
 		});
+		const savedToken = await newRefreshToken.save();
 
 		const { password: _, ...adminDetails } = admin.toObject();
 
-		res.status(200).json({
-			message: "Admin logged in successfully",
-			token,
-			adminData: adminDetails,
-		});
+		if (savedToken) {
+			storeToken(
+				"adminRefreshToken",
+				refreshToken,
+				7 * 24 * 60 * 60 * 1000,
+				res
+			);
+
+			res.status(200).json({
+				message: "Admin logged in successfully",
+				adminData: adminDetails,
+				success: true,
+				accessToken,
+				role: "admin",
+			});
+		}
 	} catch (error) {
 		console.log("Admin Sign In Error: ", error);
 		res.status(500).json({ message: "Internal server error" });
 	}
+};
+
+const refreshAccessToken = async (req, res) => {
+	console.log("refreshing token");
+
+	try {
+		const refreshToken =
+			req?.cookies?.studentRefreshToken ||
+			req?.cookies?.adminRefreshToken ||
+			req?.cookies?.tutorRefreshToken;
+
+		if (!refreshToken) {
+			return res.status(403).json({
+				message: "Refresh token expired. Login to your account",
+				success: false,
+			});
+		}
+
+		const tokenDoc = await RefreshToken.findOne({ token: refreshToken });
+		if (!tokenDoc) {
+			return res.status(403).json({
+				message: "Invalid refresh token",
+				success: false,
+			});
+		}
+
+		const roleSecrets = {
+			student: {
+				refreshSecret: process.env.JWT_STUDENT_REFRESH_TOKEN_SECRET,
+				accessSecret: process.env.JWT_STUDENT_ACCESS_TOKEN_SECRET,
+			},
+			tutor: {
+				refreshSecret: process.env.JWT_TUTOR_REFRESH_TOKEN_SECRET,
+				accessSecret: process.env.JWT_TUTOR_ACCESS_TOKEN_SECRET,
+			},
+			admin: {
+				refreshSecret: process.env.JWT_ADMIN_REFRESH_TOKEN_SECRET,
+				accessSecret: process.env.JWT_ADMIN_ACCESS_TOKEN_SECRET,
+			},
+		};
+
+		const { user: role, expiresAt } = tokenDoc;
+
+		if (!roleSecrets[role]) {
+			return res.status(403).json({
+				message: "Invalid role in refresh token",
+				success: false,
+				role,
+			});
+		}
+
+		const { refreshSecret, accessSecret } = roleSecrets[role];
+
+		if (expiresAt <= new Date()) {
+			await RefreshToken.deleteOne({ token: refreshToken });
+
+			res.clearCookie(`${role}RefreshToken`, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === "production",
+				sameSite:
+					process.env.NODE_ENV === "production" ? "none" : "strict",
+			});
+
+			return res.status(403).json({
+				message: "Refresh token expired. Login to your account",
+				success: false,
+			});
+		}
+
+		try {
+			const decoded = jwt.verify(refreshToken, refreshSecret);
+
+			const newAccessToken = jwt.sign(
+				{ _id: decoded._id, email: decoded.email },
+				accessSecret,
+				{ expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES }
+			);
+			console.log("New Access Token:", newAccessToken);
+
+			return res.status(200).json({
+				message: "Access Token created successfully",
+				success: true,
+				access_token: newAccessToken,
+				role,
+			});
+		} catch (err) {
+			console.error("Invalid Refresh Token:", err.message);
+			return res.status(403).json({
+				message: "Invalid refresh token",
+				success: false,
+			});
+		}
+	} catch (error) {
+		console.error("Error in Refresh Token:", error.message);
+		return res.status(500).json({
+			message: "Something went wrong",
+			success: false,
+			error: error.message,
+		});
+	}
+};
+
+const userLogout = async (req, res) => {
+	const { role } = req.body;
+	const refreshToken = req.cookies[`${role}RefreshToken`];
+	if (!refreshToken) {
+		return res.status(403).json({
+			message: "Refresh token expired. Login to your account",
+			success: false,
+		});
+	}
+
+	await RefreshToken.deleteOne({ token: refreshToken });
+
+	res.clearCookie(`${role}RefreshToken`, {
+		httpOnly: true,
+		secure: true,
+		sameSite: "strict",
+	});
+
+	return res.status(200).json({ message: "Logged out successfully." });
 };
 
 module.exports = {
@@ -583,4 +809,6 @@ module.exports = {
 	tutorSignUp,
 	tutorSignIn,
 	adminSignIn,
+	refreshAccessToken,
+	userLogout,
 };

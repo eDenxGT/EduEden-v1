@@ -4,14 +4,30 @@ import { persistReducer } from "redux-persist";
 
 import studentReducer from "./slices/studentSlice";
 import tutorReducer from "./slices/tutorSlice";
-import adminReducer from './slices/adminSlice'
-import publicReducer from './slices/publicSlice'
-import categoryReducer from './slices/categoriesSlice'
+import adminReducer from "./slices/adminSlice";
+import publicReducer from "./slices/publicSlice";
+import categoryReducer from "./slices/categoriesSlice";
+import courseReducer from "./slices/courseSlice";
+import lectureReducer from "./slices/lectureSlice";
+import newCourseReducer from "./slices/newCourse";
+import updateCourseReducer from "./slices/updateCourse";
+import cartReducer from "./slices/cartSlice";
 
 const persistConfig = {
 	key: "root",
 	storage,
-	whitelist: ["student", "tutor", "admin", "public"],
+	whitelist: [
+		"student",
+		"tutor",
+		"admin",
+		"public",
+		"categories",
+		"courses",
+		"lectures",
+		"newCourse",
+		"updateCourse",
+		"cart"
+	],
 };
 
 const rootReducer = combineReducers({
@@ -19,7 +35,12 @@ const rootReducer = combineReducers({
 	tutor: tutorReducer,
 	admin: adminReducer,
 	public: publicReducer,
-	categories: categoryReducer
+	categories: categoryReducer,
+	courses: courseReducer,
+	lectures: lectureReducer,
+	newCourse: newCourseReducer,
+	updateCourse: updateCourseReducer,
+	cart: cartReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

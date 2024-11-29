@@ -2,7 +2,6 @@
 //* ====== Imports of Built-In and External Components ====== *//
 import { useEffect, useState } from "react";
 import {
-	Search,
 	Bell,
 	Heart,
 	ShoppingCart,
@@ -12,6 +11,7 @@ import {
 	Menu,
 	LogOut,
 } from "lucide-react";
+import Cookies from "js-cookie";
 import { PiGraduationCap } from "react-icons/pi";
 import { FiArrowLeft } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
@@ -33,11 +33,11 @@ import { publicChangeTheme } from "../../store/slices/publicSlice";
 
 //* ====== Imports of Configurations ====== *//
 import SideBarMenu from "../../config/SidebarMenuConfig";
-
+import { fetchCartItems } from "../../store/thunks/cartThunks";
+import { axiosInstance } from "../../api/axiosConfig";
 
 //* ====== Sidebar Component ====== *//
 const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
-
 	//* ====== Local State for Sidebar ====== *//
 	const [isConfirmationModalOpen, setIsConfirmationModalOpen] =
 		useState(false);
@@ -45,7 +45,6 @@ const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
 		() => parseInt(localStorage.getItem("activeItem"), 10) || 0
 	);
 
-	
 	//* ====== Synchronize Active Item with LocalStorage ====== *//
 	useEffect(() => {
 		localStorage.setItem("activeItem", activeIndex);
@@ -144,7 +143,6 @@ const Sidebar = ({ role, onClose, handleLogout, isVisible, toggleTheme }) => {
 			/>
 		</div>
 	);
-
 };
 
 //* ====== Header Component ====== *//
@@ -153,8 +151,23 @@ const Header = ({ role }) => {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 
+	const { cart } = useSelector((state) => state.cart);
+	const studentData = useSelector((state) => state.student?.studentData);
+
 	//* ====== Local State for Sidebar Visibility ====== *//
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+	//* ====== Local State for Cart Count ====== *//
+	const [cartCount, setCartCount] = useState(0);
+
+	useEffect(() => {
+		const fetchCart = async () => {
+			await dispatch(fetchCartItems(studentData.user_id)).unwrap();
+			setCartCount(cart?.length);
+			// console.log(cart);
+		};
+		fetchCart();
+	}, [cart?.length]);
 
 	//* ====== Theme and Auth State from Redux ====== *//
 	const studentToggleTheme = useSelector(
@@ -165,9 +178,6 @@ const Header = ({ role }) => {
 	const publicToggleTheme = useSelector((state) => state.public?.toggleTheme);
 
 	const tutorAvatar = useSelector((state) => state.tutor?.tutorData?.avatar);
-	const studentAvatar = useSelector(
-		(state) => state.student?.studentData?.avatar
-	);
 	const adminAvatar = useSelector((state) => state.admin?.adminData?.avatar);
 
 	const studentIsAuthenticated = useSelector(
@@ -198,12 +208,12 @@ const Header = ({ role }) => {
 
 	const userAvatar =
 		role === "student"
-			? studentAvatar
+			? studentData?.avatar
 			: role === "tutor"
 			? tutorAvatar
 			: adminAvatar;
 
-			//* ====== Functions for Logout and Theme Change ====== *//
+	//* ====== Functions for Logout and Theme Change ====== *//
 	const handleChange = () => {
 		role === "student"
 			? dispatch(studentChangeTheme(!toggleTheme))
@@ -214,16 +224,38 @@ const Header = ({ role }) => {
 			: role === "public" && dispatch(publicChangeTheme(!toggleTheme));
 	};
 
-	const handleSideBarLogout = () => {
-		if (role === "student") {
-			dispatch(studentLogout());
-			navigate("/student/signin");
-		} else if (role === "tutor") {
-			dispatch(tutorLogout());
-			navigate("/tutor/signin");
-		} else if (role === "admin") {
-			dispatch(adminLogout());
-			navigate("/admin/signin");
+	const handleSideBarLogout = async () => {
+		try {
+			let accessToken = "";
+			let redirectPath = "";
+			let logoutAction = null;
+
+			if (role === "student") {
+				accessToken = "student_access_token";
+				redirectPath = "/student/signin";
+				logoutAction = studentLogout;
+			} else if (role === "tutor") {
+				accessToken = "tutor_access_token";
+				redirectPath = "/tutor/signin";
+				logoutAction = tutorLogout;
+			} else if (role === "admin") {
+				accessToken = "admin_access_token";
+				redirectPath = "/admin/signin";
+				logoutAction = adminLogout;
+			}
+
+			await axiosInstance.post("/auth/logout", { role });
+
+			Cookies.remove(accessToken);
+
+			if (logoutAction) {
+				dispatch(logoutAction());
+			}
+
+			navigate(redirectPath);
+		} catch (error) {
+			console.error("Error during logout:", error);
+			alert("Failed to log out. Please try again.");
 		}
 	};
 
@@ -265,7 +297,7 @@ const Header = ({ role }) => {
 						</div>
 
 						{/* Search Bar */}
-						<div className="flex-1 max-w-sm mx-4">
+						{/* <div className="flex-1 max-w-sm mx-4">
 							<div className="relative">
 								<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
 								<input
@@ -279,7 +311,7 @@ const Header = ({ role }) => {
 					}`}
 								/>
 							</div>
-						</div>
+						</div> */}
 
 						<div className="flex items-center gap-6 ml-auto">
 							{/* Action Icons */}
@@ -292,27 +324,46 @@ const Header = ({ role }) => {
 									}`}>
 									<Bell className="h-5 w-5" />
 								</button>
-								{role === "student" ||
-									(role === "public" && (
-										<>
-											<button
-												className={`${
-													toggleTheme
-														? "text-gray-400 hover:text-gray-200"
-														: "text-gray-600 hover:text-gray-900"
-												}`}>
-												<Heart className="h-5 w-5" />
-											</button>
-											<button
-												className={`${
-													toggleTheme
-														? "text-gray-400 hover:text-gray-200"
-														: "text-gray-600 hover:text-gray-900"
-												}`}>
-												<ShoppingCart className="h-5 w-5" />
-											</button>
-										</>
-									))}
+								{(role === "student" || role === "public") && (
+									<>
+										<button
+											onClick={() =>
+												navigate(
+													`/student/wishlist/${studentData.user_id}`
+												)
+											}
+											className={`${
+												toggleTheme
+													? "text-gray-400 hover:text-gray-200"
+													: "text-gray-600 hover:text-gray-900"
+											}`}>
+											<Heart className="h-5 w-5" />
+										</button>
+										<button
+											onClick={() =>
+												navigate(
+													`/student/cart/${studentData.user_id}`
+												)
+											}
+											className={`relative ${
+												toggleTheme
+													? "text-gray-400 hover:text-gray-200"
+													: "text-gray-600 hover:text-gray-900"
+											}`}>
+											<ShoppingCart className="h-5 w-5" />
+											{cartCount > 0 && (
+												<span
+													className={`absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none transform translate-x-1/2 -translate-y-1/2 rounded-full ${
+														toggleTheme
+															? "bg-orange-500 text-white"
+															: "bg-orange-500 text-white"
+													}`}>
+													{cartCount}
+												</span>
+											)}
+										</button>
+									</>
+								)}
 							</div>
 
 							{/* Theme Toggle Button */}

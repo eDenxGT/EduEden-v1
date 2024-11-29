@@ -15,50 +15,57 @@ const StudentSchema = new mongoose.Schema(
 		},
 		phone: {
 			type: Number,
-			required: function(){ return this.google_id ? false : true },
+			required: function () {
+				return this.google_id ? false : true;
+			},
 		},
 		password: {
 			type: String,
-			required: function(){ return this.google_id ? false : true },
+			required: function () {
+				return this.google_id ? false : true;
+			},
 		},
 		user_id: {
 			type: String,
-			default: "edueden"+Date.now()+Math.floor(Math.random() * 100000+ Date.now() +900000),
+			default:
+				"edueden" +
+				Date.now() +
+				Math.floor(Math.random() * 100000 + Date.now() + 900000),
 		},
 		google_id: {
 			type: String,
 		},
 		avatar: {
-         type: String,
+			type: String,
 		},
 		active_courses: [
 			{
-            type: mongoose.Schema.Types.ObjectId,
+				type: mongoose.Schema.Types.ObjectId,
 				ref: "Course",
 			},
 		],
 		completed_quizzes: [
-         {
-            type: mongoose.Schema.Types.ObjectId,
+			{
+				type: mongoose.Schema.Types.ObjectId,
 				ref: "Quiz",
 			},
 		],
-      is_blocked: {
-         type: Boolean,
-         default: false,
-      },
+		is_blocked: {
+			type: Boolean,
+			default: false,
+		},
 		is_phone_verified: {
 			type: Boolean,
 			default: false,
 		},
-		resetToken : {
-			type: String
+		resetToken: {
+			type: String,
 		},
-		resetTokenExpiry : {
-			type: Date
+		resetTokenExpiry: {
+			type: Date,
 		},
-		last_login : {
-			type: Date
+		last_login: {
+			type: Date,
 		},
 		created_at: {
 			type: Date,

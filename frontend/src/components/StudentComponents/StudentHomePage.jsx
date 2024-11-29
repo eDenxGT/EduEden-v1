@@ -70,7 +70,7 @@ export default function StudentHomePage() {
 					</div>
 					<div className="hidden md:block">
 						<img
-							src="https://thumbs.dreamstime.com/b/smiling-anime-chibi-cartoon-boy-working-computer-white-background-smiling-anime-chibi-cartoon-boy-working-computer-321914300.jpg"
+							src={studentData?.avatar ? studentData?.avatar :"https://thumbs.dreamstime.com/b/smiling-anime-chibi-cartoon-boy-working-computer-white-background-smiling-anime-chibi-cartoon-boy-working-computer-321914300.jpg"}
 							alt="Student"
 							className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg animate-bounce"
 						/>

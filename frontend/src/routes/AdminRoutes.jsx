@@ -12,6 +12,7 @@ import Categories from "../components/AdminComponents/Categories/Categories";
 import AddCategoriesModal from "../components/AdminComponents/Categories/AddCategoriesModal";
 import Orders from "../components/AdminComponents/SideBar/OrdersList";
 import CourseListing from "../components/AdminComponents/Courses/CourseListing";
+import SingleCourseDetails from "../components/AdminComponents/Courses/SingleCourseDetails";
 
 const AdminRoutes = () => {
 	return (
@@ -30,7 +31,7 @@ const AdminRoutes = () => {
 					path="/"
 					element={
 						<PrivateRoute
-							allowedRoles={["admin"]}
+							allowedRole="admin"
 							redirectTo="/admin/signin">
 							<AdminLayout />
 						</PrivateRoute>
@@ -39,9 +40,17 @@ const AdminRoutes = () => {
 					<Route path="tutors" element={<TutorManagement />} />
 					<Route path="students" element={<StudentManagement />} />
 					<Route path="categories" element={<Categories />} />
-					<Route path="categories/new" element={<AddCategoriesModal />} />
+					<Route
+						path="categories/new"
+						element={<AddCategoriesModal />}
+					/>
 					<Route path="orders" element={<Orders />} />
 					<Route path="courses" element={<CourseListing />} />
+
+					<Route
+						path="courses/:course_id"
+						element={<SingleCourseDetails />}
+					/>
 					{/* <Route path="settings" element={<AdminSettings />} /> */}
 				</Route>
 

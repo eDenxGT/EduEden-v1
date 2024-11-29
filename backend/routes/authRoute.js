@@ -11,7 +11,9 @@ const {
 	resetPassword,
 	tutorSignUp,
 	tutorSignIn,
-	adminSignIn
+	adminSignIn,
+	refreshAccessToken,
+	userLogout
 } = require("../controllers/authController");
 
 authRouter
@@ -26,6 +28,9 @@ authRouter
 	.post("/tutor/signin", tutorSignIn)
 	.post("/tutor/signup", tutorSignUp)
 
-	.post("/admin/signin", adminSignIn);
+	.post("/admin/signin", adminSignIn)
+
+	.post("/refresh-token", refreshAccessToken)
+	.post("/logout", userLogout)
 
 module.exports = authRouter;

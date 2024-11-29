@@ -13,6 +13,7 @@ import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
 import { useDispatch } from "react-redux";
 import { tutorLogin } from "../../../store/slices/tutorSlice";
 import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
+import storeAccessToken from "../../../api/storeAccessToken";
 
 const TutorSignIn = () => {
 	const [formData, setFormData] = useState({
@@ -32,6 +33,7 @@ const TutorSignIn = () => {
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
+
 		setFormData({
 			...formData,
 			[name]: type === "checkbox" ? checked : value,
@@ -73,9 +75,13 @@ const TutorSignIn = () => {
 				"/auth/tutor/signin",
 				formData
 			);
-			if (response.status === 200) {
-				dispatch(tutorLogin(response.data));
+			if (response?.data?.success === true) {
+				const accessToken = response?.data?.accessToken;
+				if (!accessToken) {
+					throw new Error("Access token not provided in response.");
+				}
 				toast.success(response?.data?.message);
+				storeAccessToken("tutor", accessToken, 1);				dispatch(tutorLogin(response.data));
 				localStorage.removeItem("isOtpModalOpen");
 				localStorage.removeItem("formEmail");
 				setTimeout(() => {

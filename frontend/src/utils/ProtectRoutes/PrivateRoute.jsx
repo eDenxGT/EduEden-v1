@@ -1,25 +1,26 @@
 /* eslint-disable react/prop-types */
-import { useSelector } from "react-redux";
+import Cookies from "js-cookie";
+import { jwtDecode as jwt_decode } from "jwt-decode";
 import { Navigate } from "react-router-dom";
-import { createSelector } from "reselect";
 
-const selectAuthState = (state) => state;
+const PrivateRoute = ({ allowedRole, redirectTo, children }) => {
+	const accessToken = Cookies.get(`${allowedRole}_access_token`);
 
-const selectTokens = createSelector([selectAuthState], (state) => ({
-	studentToken: state.student.token,
-	tutorToken: state.tutor.token,
-	adminToken: state.admin.token,
-}));
+	const getRoleFromToken = (token) => {
+		if (!token) return null;
+		try {
+			const decoded = jwt_decode(token);
+			// console.log(decoded);
+			return decoded?.data?.role;
+		} catch (error) {
+			console.log("Role getting from token error:", error);
+			return null;
+		}
+	};
 
-const PrivateRoute = ({ allowedRoles, redirectTo, children }) => {
-	const { studentToken, tutorToken, adminToken } = useSelector(selectTokens);
+	const userRole = getRoleFromToken(accessToken);
 
-	const tokens = [studentToken, tutorToken, adminToken];
-	const roles = ["student", "tutor", "admin"];
-
-	const isAuthorized = tokens.some(
-		(token, index) => token && allowedRoles.includes(roles[index])
-	);
+	const isAuthorized = (allowedRole === userRole);
 
 	if (!isAuthorized) {
 		return <Navigate to={redirectTo} replace />;

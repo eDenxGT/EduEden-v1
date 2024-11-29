@@ -28,7 +28,7 @@ const ConfirmationModal = ({
        <div
          className={`${
            isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
-         } rounded-lg shadow-xl max-w-md w-full relative transform transition-all duration-300 ${
+         } rounded-none shadow-xl max-w-md w-full relative transform transition-all duration-300 ${
            isOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
          }`}
        >
@@ -45,7 +45,7 @@ const ConfirmationModal = ({
          </div>
          <div className={`border-t ${isDarkMode ? "border-gray-700" : "border-gray-200"} p-6 flex justify-between`}>
            <button
-             className={`px-4 py-2 rounded-md transition-all duration-200 ${
+             className={`px-4 py-2 rounded-none transition-all duration-200 ${
                isDarkMode
                  ? "bg-gray-700 text-white hover:bg-gray-600"
                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
@@ -55,7 +55,7 @@ const ConfirmationModal = ({
              {cancelText}
            </button>
            <button
-             className={`px-4 py-2 rounded-md text-white transition-all duration-200 ${
+             className={`px-4 py-2 rounded-none text-white transition-all duration-200 ${
                icon === "success"
                  ? "bg-green-500 hover:bg-green-600"
                  : "bg-red-500 hover:bg-red-600"

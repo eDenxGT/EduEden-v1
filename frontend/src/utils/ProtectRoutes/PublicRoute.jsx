@@ -1,26 +1,41 @@
 /* eslint-disable react/prop-types */
-import { useSelector } from "react-redux";
+import Cookies from "js-cookie";
+import {jwtDecode as jwt_decode} from "jwt-decode";
 import { Navigate } from "react-router-dom";
 
-const PublicRoute = ({
-	children,
-}) => {
-	const studentToken = useSelector((state) => state.student.token);
-	const tutorToken = useSelector((state) => state.tutor.token);
-	const adminToken = useSelector((state) => state.admin.token);
+const PublicRoute = ({ children }) => {
+  const getRoleFromToken = (token) => {
+    if (!token) return null;
+    try {
+      const decoded = jwt_decode(token);
+      return decoded?.data?.role;
+    } catch (error) {
+      console.log("Role getting from token error:", error);
+      return null;
+    }
+  };
 
-	if (studentToken) {
-		return <Navigate to="/student/home" replace />;
-	}
+  const studentToken = Cookies.get("student_access_token");
+  const tutorToken = Cookies.get("tutor_access_token");
+  const adminToken = Cookies.get("admin_access_token");
 
-	if (tutorToken) {
-		return <Navigate to="/tutor/dashboard" replace />;
-	}
+  const studentRole = getRoleFromToken(studentToken);
+  const tutorRole = getRoleFromToken(tutorToken);
+  const adminRole = getRoleFromToken(adminToken);
 
-	if (adminToken) {
-		return <Navigate to="/admin/dashboard" replace />;
-	}
-	return children;
+  if (studentRole === "student") {
+    return <Navigate to="/student/home" replace />;
+  }
+
+  if (tutorRole === "tutor") {
+    return <Navigate to="/tutor/dashboard" replace />;
+  }
+
+  if (adminRole === "admin") {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  return children;
 };
 
 export default PublicRoute;

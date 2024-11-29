@@ -12,13 +12,13 @@ const tutorSlice = createSlice({
 	initialState: INITIAL_STATE,
 	reducers: {
 		tutorLogin(state, action) {
+			console.log(action.payload);
+			
 			state.tutorData = action.payload.tutorData;
 			state.token = action.payload.token;
 			state.isAuthenticated = true
 		},
-		tutorUpdate(state, action) {
-			console.log("HELLO");
-			
+		tutorUpdate(state, action) {			
 			state.tutorData = {
 				...state.tutorData,
 				...action.payload
