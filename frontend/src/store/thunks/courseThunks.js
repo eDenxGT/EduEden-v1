@@ -60,6 +60,24 @@ const fetchCoursesByTutorId = createAsyncThunk(
 	}
 );
 
+const fetchCoursesByStudentId = createAsyncThunk(
+	"courses/fetchCoursesByStudentId",
+	async (user_id, { rejectWithValue }) => {
+		try {
+			console.log(user_id)
+			const response = await axiosInstance.get(
+				`/courses/student/my-courses/${user_id}`
+			);
+
+			return response?.data?.courses;
+		} catch (error) {
+			return rejectWithValue(
+				error?.response?.data?.message || "Failed to fetch courses."
+			);
+		}
+	}
+);
+
 const fetchCourses = createAsyncThunk(
 	"courses/fetchCourses",
 	async (_, { rejectWithValue }) => {
@@ -184,5 +202,6 @@ export {
 	fetchCoursesByCourseId,
 	updateCourse,
 	deleteCourseById,
-	handleCourseStatus
+	handleCourseStatus,
+	fetchCoursesByStudentId
 };

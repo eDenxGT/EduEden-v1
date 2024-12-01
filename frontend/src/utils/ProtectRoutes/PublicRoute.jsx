@@ -23,6 +23,8 @@ const PublicRoute = ({ children }) => {
   const tutorRole = getRoleFromToken(tutorToken);
   const adminRole = getRoleFromToken(adminToken);
 
+  console.log(studentRole, tutorRole, adminRole);
+
   if (studentRole === "student") {
     return <Navigate to="/student/home" replace />;
   }

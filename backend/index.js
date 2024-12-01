@@ -21,6 +21,7 @@ const courseRouter = require("./routes/courseRoute");
 const lectureRouter = require("./routes/lectureRoute");
 const wishlistRouter = require("./routes/wishlistRoute");
 const cartRouter = require("./routes/cartRoute");
+const paymentRouter = require("./routes/paymentRoute");
 
 
 const app = express();
@@ -54,6 +55,7 @@ app.use("/cart", cartRouter);
 app.use("/wishlist", wishlistRouter);
 
 app.use("/api/upload", uploadRouter);
+app.use("/payment", paymentRouter);
 
 
 mongoose

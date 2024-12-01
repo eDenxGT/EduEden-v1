@@ -1,5 +1,5 @@
 const Student = require("../models/studentModel");
-const Tutor = require('../models/tutorModel')
+const Tutor = require("../models/tutorModel");
 
 const { comparePassword, hashPassword } = require("../utils/passwordUtils");
 
@@ -74,12 +74,10 @@ const updateStudent = async (req, res) => {
 					.status(401)
 					.json({ message: "Invalid current password" });
 			} else if (currentPassword === newPassword) {
-				return res
-					.status(400)
-					.json({
-						message:
-							"New password cannot be the same as the current password",
-					});
+				return res.status(400).json({
+					message:
+						"New password cannot be the same as the current password",
+				});
 			}
 		}
 
@@ -108,7 +106,23 @@ const updateStudent = async (req, res) => {
 	}
 };
 
+const getStudentDetails = async (req, res) => {
+	try {
+		const { student_id } = req.params;
+		console.log(student_id)
+		const student = await Student.findOne({user_id: student_id});
+
+		if (!student) {
+			return res.status(404).json({ message: "Student not found" });
+		}
+		res.status(200).json({ student });
+	} catch (error) {
+		console.error("Error retrieving student:", error);
+		res.status(500).json({ message: "Internal server error" });
+	}
+};
 
 module.exports = {
-   updateStudent
-}
+	updateStudent,
+	getStudentDetails,
+};

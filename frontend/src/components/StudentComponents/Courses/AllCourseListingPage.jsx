@@ -92,7 +92,7 @@ const AllCourseListingPage = () => {
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-semibold">My Enrolled Courses</h1>
+          <h1 className="text-2xl font-semibold">All Courses</h1>
           <div className="flex items-center space-x-2">
             <BookOpen className="w-6 h-6" />
             <span>{courses.length} Courses</span>

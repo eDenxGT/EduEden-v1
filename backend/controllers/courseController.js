@@ -1,6 +1,7 @@
 const Course = require("../models/courseModel");
 const Category = require("../models/categoryModel");
 const Lecture = require("../models/lectureModel");
+const Student = require("../models/studentModel");
 
 const createCourse = async (req, res) => {
 	const {
@@ -158,6 +159,28 @@ const getCoursesByTutorId = async (req, res) => {
 		return res.status(500).json({ message: "Internal server error" });
 	}
 };
+const getCoursesByStudentId = async (req, res) => {
+	try {
+		const { student_id } = req.params;
+		const student = await Student.findOne({
+			user_id: student_id,
+		});
+		if(!student){
+			return res.status(404).json({ message: "Student not found" });
+		}
+		if(student.active_courses.length === 0){
+			return res.status(200).json({ courses: [] });
+		}
+		const coursesEnrolledByStudent = await Course.find({
+			course_id: { $in: student.active_courses },
+		});
+
+		return res.status(200).json({ courses: coursesEnrolledByStudent });
+	} catch (error) {
+		console.log("Get Courses By Student Id error : ", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
 
 const getAllCourses = async (req, res) => {
 	try {
@@ -272,14 +295,17 @@ const deleteCourseById = async (req, res) => {
 const handleCourseStatus = async (req, res) => {
 	try {
 		const { course_id } = req.params;
-		const course = await Course.findOne({ course_id }).populate('category_id', 'title');
+		const course = await Course.findOne({ course_id }).populate(
+			"category_id",
+			"title"
+		);
 
 		if (!course) {
 			return res.status(404).json({ message: "Course not found" });
 		}
 
 		course.is_listed = !course.is_listed;
-		
+
 		await course.save();
 		return res
 			.status(200)
@@ -298,4 +324,5 @@ module.exports = {
 	updateCourse,
 	deleteCourseById,
 	handleCourseStatus,
+	getCoursesByStudentId,
 };

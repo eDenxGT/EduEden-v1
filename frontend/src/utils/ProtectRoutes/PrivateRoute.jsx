@@ -5,12 +5,13 @@ import { Navigate } from "react-router-dom";
 
 const PrivateRoute = ({ allowedRole, redirectTo, children }) => {
 	const accessToken = Cookies.get(`${allowedRole}_access_token`);
-
+	console.log(accessToken);
+	console.log(allowedRole);
 	const getRoleFromToken = (token) => {
 		if (!token) return null;
 		try {
 			const decoded = jwt_decode(token);
-			// console.log(decoded);
+			console.log(decoded);
 			return decoded?.data?.role;
 		} catch (error) {
 			console.log("Role getting from token error:", error);

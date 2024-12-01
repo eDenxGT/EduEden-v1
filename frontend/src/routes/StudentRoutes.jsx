@@ -12,6 +12,11 @@ import AllCourseListingPage from "../components/StudentComponents/Courses/AllCou
 import SingleCourseDetails from "../components/StudentComponents/Courses/SingleCourseDetails";
 import CoursePlayer from "../components/StudentComponents/Courses/CoursePlayer";
 import CourseCart from "../components/StudentComponents/CourseCart";
+import CheckoutPage from "../components/StudentComponents/Payment/CheckoutPage";
+import OrderSummary from "../components/StudentComponents/Payment/OrderSummary";
+import PurchasedCourse from "../components/StudentComponents/Courses/PurchasedCourse";
+import MyCourses from "../components/StudentComponents/Courses/MyCoursesList";
+import VideoPlayer from "../components/StudentComponents/VideoPlayer/VideoPlayer";
 
 const StudentRoutes = () => {
 	return (
@@ -51,7 +56,12 @@ const StudentRoutes = () => {
 
 					<Route path="courses" element={<AllCourseListingPage />} />
 					<Route path="courses/:course_id" element={<SingleCourseDetails />} />
-					<Route path="courses/play/:course_id/:lecture_id" element={<CoursePlayer />} />
+					<Route path="my-courses" element={<MyCourses />} />
+					<Route path="my-courses/:course_id" element={<PurchasedCourse />} />
+					<Route path="my-courses/:course_id/lecture/:lecture_id" element={<CoursePlayer />} />
+
+					<Route path="checkout/:student_id" element={<CheckoutPage />} />
+					<Route path="order/:order_id" element={<OrderSummary />} />
 				</Route>
 
 				<Route path="/*" element={<Error404Page />} />

@@ -16,7 +16,7 @@ const CourseCart = () => {
 
   useEffect(() => {
     setCourses(cart);
-  }, [cart.length]);
+  }, [cart?.length]);
 
   const subtotal = courses?.reduce((acc, course) => acc + course.price, 0) || 0;
   const total = subtotal;
@@ -29,7 +29,8 @@ const CourseCart = () => {
     navigate('/student/courses');
   };
 
-  if (courses.length === 0) {
+
+  if (courses?.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
@@ -142,6 +143,7 @@ const CourseCart = () => {
                   <Button 
                     text="Proceed To Checkout"
                     className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                    onClick={() => navigate(`/student/checkout/${student_id}`)}
                   />
                 </div>
               </div>

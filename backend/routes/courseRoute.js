@@ -5,11 +5,12 @@ const {
 	createCourse,
 	getCoursesByTutorId,
 	getAllCourses,
-   getAllListedCourses,
-   getCourseByCourseId,
+	getAllListedCourses,
+	getCourseByCourseId,
 	updateCourse,
 	deleteCourseById,
-	handleCourseStatus
+	handleCourseStatus,
+	getCoursesByStudentId
 } = require("../controllers/courseController");
 
 courseRouter
@@ -20,6 +21,7 @@ courseRouter
 	.get("/get-listed", getAllListedCourses)
 	.get("/get/:course_id", getCourseByCourseId)
 	.delete("/delete/:course_id", deleteCourseById)
-	.put('/status/:course_id', handleCourseStatus)
+	.put("/status/:course_id", handleCourseStatus)
+	.get("/student/my-courses/:student_id", getCoursesByStudentId);
 
 module.exports = courseRouter;

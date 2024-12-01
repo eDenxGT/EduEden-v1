@@ -1,4 +1,5 @@
 import {
+	BookCheck,
 	BookOpen,
 	BookOpenText,
 	ClipboardList,
@@ -26,6 +27,11 @@ const navItems = {
 			title: "Courses",
 			icon: <BookOpenText className="h-5 w-5" />,
 			href: "/student/courses",
+		},
+		{
+			title: "My Courses",
+			icon: <BookCheck className="h-5 w-5" />,
+			link: "/student/my-courses",
 		},
 		{
 			title: "Teachers",

@@ -5,9 +5,7 @@ const storeAccessToken = (role, token, expiresInMinutes = 13) => {
     console.error("Role and token are required to store the access token.");
     return;
   }
-  const expiresInDays = expiresInMinutes / (24 * 60);
-
-  Cookies.set(`${role}_access_token`, token, { expires: expiresInDays });
+  Cookies.set(`${role}_access_token`, token, { expires: 7 });
 
   console.log(`${role}_access_token stored successfully with a ${expiresInMinutes}-minute expiry.`);
 };

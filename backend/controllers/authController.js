@@ -23,6 +23,10 @@ const {
 const FRONTEND_URL = process.env.CLIENT_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
 
+const createToken = (data) => {
+	return jwt.sign({ id: data }, JWT_SECRET, { expiresIn: "4m" });
+};
+
 const generateOTP = () => {
 	return Math.floor(100000 + Math.random() * 900000).toString();
 };
@@ -194,6 +198,9 @@ const verifyOtp = async (req, res) => {
 		if (Date.now() > unverifiedUser.otpExpiry) {
 			return res.status(400).json({ message: "OTP has expired" });
 		}
+		const randomPart = Math.random().toString(36).substring(2, 6); // 4 random alphanumeric characters
+		const timestampPart = Date.now().toString().slice(-4); // Last 4 digits of the current timestamp
+		const uniqueUserId =  `edueden${randomPart}${timestampPart}`;
 
 		let userData;
 		if (unverifiedUser.role === "student") {
@@ -204,6 +211,7 @@ const verifyOtp = async (req, res) => {
 				phone: unverifiedUser.phone,
 				password: unverifiedUser.password,
 				is_verified: true,
+				user_id: uniqueUserId
 			});
 			await userData.save();
 		} else if (unverifiedUser.role === "tutor") {
@@ -214,6 +222,7 @@ const verifyOtp = async (req, res) => {
 				phone: unverifiedUser.phone,
 				password: unverifiedUser.password,
 				is_verified: true,
+				user_id: uniqueUserId
 			});
 			await userData.save();
 		}

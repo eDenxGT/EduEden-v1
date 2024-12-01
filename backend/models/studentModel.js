@@ -27,10 +27,7 @@ const StudentSchema = new mongoose.Schema(
 		},
 		user_id: {
 			type: String,
-			default:
-				"edueden" +
-				Date.now() +
-				Math.floor(Math.random() * 100000 + Date.now() + 900000),
+			required: true
 		},
 		google_id: {
 			type: String,
@@ -40,7 +37,7 @@ const StudentSchema = new mongoose.Schema(
 		},
 		active_courses: [
 			{
-				type: mongoose.Schema.Types.ObjectId,
+				type: String,
 				ref: "Course",
 			},
 		],

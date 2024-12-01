@@ -12,6 +12,7 @@ const fetchCartItems = createAsyncThunk(
          
 			return response?.data?.cart;
 		} catch (error) {
+			console.log("Fetch cart items error:",error)
 			return rejectWithValue(error?.response?.data?.message);
 		}
 	}
@@ -20,8 +21,8 @@ const fetchCartItems = createAsyncThunk(
 const addToCart = createAsyncThunk(
 	"cart/addToCart",
 	async ({ course_id, user_id }, { rejectWithValue }) => {
-		console.log(course_id, user_id);
-
+		console.log("coursecart",course_id, user_id);
+		
 		try {
 			const response = await axiosInstance.post("/cart/add-item", {
 				course_id,
@@ -29,6 +30,7 @@ const addToCart = createAsyncThunk(
 			});
 			return response?.data?.cart;
 		} catch (error) {
+			console.log("Add cart items error:",error)
 			return rejectWithValue(error?.response?.data?.message);
 		}
 	}
@@ -41,12 +43,13 @@ const removeFromCart = createAsyncThunk(
          console.log(course_id, student_id);
          
 			const response = await axiosInstance.put("/cart/remove-item", {
-				 course_id, student_id ,
+				course_id, student_id ,
 			});
          console.log(response);
          
 			return response?.data?.cart;
 		} catch (error) {
+			console.log("Remove cart items error:",error)
 			return rejectWithValue(error?.response?.data?.message);
 		}
 	}

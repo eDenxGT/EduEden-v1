@@ -167,7 +167,7 @@ const Header = ({ role }) => {
 			// console.log(cart);
 		};
 		fetchCart();
-	}, [cart?.length]);
+	}, [cart?.length, studentData?.active_courses.length]);
 
 	//* ====== Theme and Auth State from Redux ====== *//
 	const studentToggleTheme = useSelector(
