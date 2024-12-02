@@ -1,6 +1,7 @@
 import { axiosInstance, axiosMultipartInstance } from "./axiosConfig";
 import { toast } from "sonner";
 
+
 const uploadVideoToCloudinary = async (file, params) => {
    const { public_id_prefix, transformation, folder  } = params
 	try {

@@ -2,6 +2,7 @@ const Course = require("../models/courseModel");
 const Category = require("../models/categoryModel");
 const Lecture = require("../models/lectureModel");
 const Student = require("../models/studentModel");
+const CourseProgress = require("../models/courseProgressModel");
 
 const createCourse = async (req, res) => {
 	const {
@@ -165,10 +166,10 @@ const getCoursesByStudentId = async (req, res) => {
 		const student = await Student.findOne({
 			user_id: student_id,
 		});
-		if(!student){
+		if (!student) {
 			return res.status(404).json({ message: "Student not found" });
 		}
-		if(student.active_courses.length === 0){
+		if (student.active_courses.length === 0) {
 			return res.status(200).json({ courses: [] });
 		}
 		const coursesEnrolledByStudent = await Course.find({
@@ -315,6 +316,61 @@ const handleCourseStatus = async (req, res) => {
 	}
 };
 
+const getCourseProgressByStudentId = async (req, res) => {
+	try {
+		const { course_id, student_id } = req.params;
+
+		const courseProgress = await CourseProgress.findOne({
+			course_id,
+			student_id,
+		});
+
+		if (!courseProgress) {
+			return res
+				.status(404)
+				.json({ message: "Course progress not found" });
+		}
+
+		return res.status(200).json({ courseProgress });
+	} catch (error) {
+		console.log("Get Course Progress By Student Id error : ", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+const updateCourseProgressByStudentId = async (req, res) => {
+	try {
+		const { course_id, student_id, lecture_id, status } = req.body;
+
+		console.log(req.body)
+		const result = await CourseProgress.findOneAndUpdate(
+			{
+				course_id,
+				student_id,
+				"progress.lecture_id": lecture_id,
+			},
+			{
+				$set: {
+					"progress.$.status": status,
+				},
+			},
+			{ new: true }
+		);
+console.log(result)
+		if (!result) {
+			return res.status(404).json({ message: "Course progress not found" });
+		}
+
+		return res.status(200).json({
+			message: "Course progress updated successfully",
+			progress: result.progress,
+		});
+	} catch (error) {
+		console.error("Update Course Progress error:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
 module.exports = {
 	createCourse,
 	getCoursesByTutorId,
@@ -325,4 +381,6 @@ module.exports = {
 	deleteCourseById,
 	handleCourseStatus,
 	getCoursesByStudentId,
+	getCourseProgressByStudentId,
+	updateCourseProgressByStudentId,
 };

@@ -10,7 +10,9 @@ const {
 	updateCourse,
 	deleteCourseById,
 	handleCourseStatus,
-	getCoursesByStudentId
+	getCoursesByStudentId,
+	getCourseProgressByStudentId,
+	updateCourseProgressByStudentId
 } = require("../controllers/courseController");
 
 courseRouter
@@ -22,6 +24,8 @@ courseRouter
 	.get("/get/:course_id", getCourseByCourseId)
 	.delete("/delete/:course_id", deleteCourseById)
 	.put("/status/:course_id", handleCourseStatus)
-	.get("/student/my-courses/:student_id", getCoursesByStudentId);
+	.get("/student/my-courses/:student_id", getCoursesByStudentId)
+	.get(`/get-progress/:student_id/:course_id`, getCourseProgressByStudentId)
+	.put("/update-course-progress", updateCourseProgressByStudentId);
 
 module.exports = courseRouter;

@@ -16,7 +16,6 @@ import CheckoutPage from "../components/StudentComponents/Payment/CheckoutPage";
 import OrderSummary from "../components/StudentComponents/Payment/OrderSummary";
 import PurchasedCourse from "../components/StudentComponents/Courses/PurchasedCourse";
 import MyCourses from "../components/StudentComponents/Courses/MyCoursesList";
-import VideoPlayer from "../components/StudentComponents/VideoPlayer/VideoPlayer";
 
 const StudentRoutes = () => {
 	return (

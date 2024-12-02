@@ -1,5 +1,7 @@
 const Lecture = require("../models/lectureModel");
 const Course = require("../models/courseModel");
+const Student = require("../models/studentModel");
+const Tutor = require("../models/tutorModel");
 
 const addLecture = async (req, res) => {
 	const {
@@ -53,6 +55,50 @@ const updateLecture = async (req, res) => {
 	}
 };
 
+const getLecturesByCourseIdForStudent = async (req, res) => {
+	const { course_id } = req.params;
+	const { student_id } = req.query;
+
+	if (!student_id)
+		return res.status(400).json({ message: "Student ID is required." });
+	if (!course_id)
+		return res.status(400).json({ message: "Course ID is required." });
+
+	try {
+		const studentEnrolledThisCourse = await Student.findOne({
+			user_id: student_id,
+			active_courses: { $in: [course_id] },
+		});
+		if (!studentEnrolledThisCourse)
+			return res
+				.status(404)
+				.json({ message: "You are not enrolled in this course!" });
+
+
+		const course = await Course.findOne({ course_id });
+		if (!course)
+			return res.status(404).json({ message: "Course not found!" });
+
+		const tutor_id = course.tutor_id;
+		const tutorDataToSend = await Tutor.findOne({ user_id: tutor_id });
+		if (!tutorDataToSend)
+			return res.status(404).json({ message: "Tutor not found!" });
+
+
+		const lectures = await Lecture.find({ course_id });
+		lectures.push( {tutor_name:tutorDataToSend?.full_name});
+		lectures.push({tutor_avatar: tutorDataToSend?.avatar});
+
+		if (lectures) {
+			return res
+				.status(200)
+				.json({ message: "Lectures fetched successfully!", lectures });
+		}
+	} catch (error) {
+		console.log("Lecture Fetching Error: ", error);
+	}
+};
+
 // const deleteLecture = async (req, res) => {
 // 	const { lecture_id } = req.params;
 // 	try {
@@ -70,6 +116,7 @@ const updateLecture = async (req, res) => {
 module.exports = {
 	addLecture,
 	updateLecture,
+	getLecturesByCourseIdForStudent,
 };
 
 // _id: 'lecture17324358904631732436888438',

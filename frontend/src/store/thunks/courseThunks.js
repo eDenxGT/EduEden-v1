@@ -12,7 +12,7 @@ const addCourse = createAsyncThunk(
 
 			let thumbnailUrl = null;
 
-			if (course_thumbnail && typeof(course_thumbnail) !== "string") {
+			if (course_thumbnail && typeof course_thumbnail !== "string") {
 				const imageUploaded = await uploadImageToCloudinary(
 					course_thumbnail,
 					{
@@ -64,7 +64,7 @@ const fetchCoursesByStudentId = createAsyncThunk(
 	"courses/fetchCoursesByStudentId",
 	async (user_id, { rejectWithValue }) => {
 		try {
-			console.log(user_id)
+			console.log(user_id);
 			const response = await axiosInstance.get(
 				`/courses/student/my-courses/${user_id}`
 			);
@@ -107,21 +107,21 @@ const fetchListedCourses = createAsyncThunk(
 );
 
 const fetchCoursesByCourseId = createAsyncThunk(
-  "courses/fetchCoursesByCourseId",
-  async (course_id, { rejectWithValue }) => {
-	console.log(course_id);
-	
-    try {
-      const response = await axiosInstance.get(
-        `/courses/get/${course_id}`
-      );
-      return response?.data?.course;
-    } catch (error) {
-      return rejectWithValue(
-        error?.response?.data?.message || "Failed to fetch course."
-      );
-    }
-  }
+	"courses/fetchCoursesByCourseId",
+	async (course_id, { rejectWithValue }) => {
+		console.log(course_id);
+
+		try {
+			const response = await axiosInstance.get(
+				`/courses/get/${course_id}`
+			);
+			return response?.data?.course;
+		} catch (error) {
+			return rejectWithValue(
+				error?.response?.data?.message || "Failed to fetch course."
+			);
+		}
+	}
 );
 
 const updateCourse = createAsyncThunk(
@@ -133,7 +133,7 @@ const updateCourse = createAsyncThunk(
 
 			let thumbnailUrl = null;
 
-			if (course_thumbnail && typeof(course_thumbnail) !== "string") {
+			if (course_thumbnail && typeof course_thumbnail !== "string") {
 				const imageUploaded = await uploadImageToCloudinary(
 					course_thumbnail,
 					{
@@ -149,10 +149,12 @@ const updateCourse = createAsyncThunk(
 				}
 			}
 			const response = await axiosInstance.put(
-				`/courses/update/${updatedCourse.course_id}`,{
-				...courseDetails,
-				course_thumbnail : thumbnailUrl ?? course_thumbnail,
-			});
+				`/courses/update/${updatedCourse.course_id}`,
+				{
+					...courseDetails,
+					course_thumbnail: thumbnailUrl ?? course_thumbnail,
+				}
+			);
 			return response?.data?.course;
 		} catch (error) {
 			return rejectWithValue(
@@ -192,7 +194,50 @@ const handleCourseStatus = createAsyncThunk(
 			);
 		}
 	}
-)
+);
+
+const fetchCourseProgressByStudentId = createAsyncThunk(
+	"courses/fetchCourseProgressByStudentId",
+	async ({ student_id, course_id }, { rejectWithValue }) => {
+		try {
+			const response = await axiosInstance.get(
+				`/courses/get-progress/${student_id}/${course_id}`
+			);
+			return response?.data?.courseProgress;
+		} catch (error) {
+			return rejectWithValue(
+				error?.response?.data?.message || "Failed to fetch course."
+			);
+		}
+	}
+);
+
+const updateCourseProgressByStudentId = createAsyncThunk(
+	"courses/updateCourseProgressByStudentId",
+	async (
+		{ course_id, student_id, lecture_id, status },
+		{ rejectWithValue }
+	) => {
+		console.log(lecture_id)
+		try {
+			const response = await axiosInstance.put(
+				"/courses/update-course-progress",
+				{
+					course_id,
+					student_id,
+					lecture_id,
+					status,
+				}
+			);
+			console.log("RESPOSNE:",response)
+			return response?.data?.progress;
+		} catch (error) {
+			return rejectWithValue(
+				error?.response?.data?.message || "Failed to UpdateCourse Progress"
+			);
+		}
+	}
+);
 
 export {
 	addCourse,
@@ -203,5 +248,7 @@ export {
 	updateCourse,
 	deleteCourseById,
 	handleCourseStatus,
-	fetchCoursesByStudentId
+	fetchCoursesByStudentId,
+	fetchCourseProgressByStudentId,
+	updateCourseProgressByStudentId,
 };

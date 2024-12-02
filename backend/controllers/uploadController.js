@@ -1,7 +1,7 @@
 const cloudinary = require("../config/cloudinary");
 
 exports.generateSignature = (req, res) => {
-	const { folder, public_id, timestamp,transformation } = req.body;
+	const { folder, public_id, timestamp, transformation } = req.body;
 
 	const paramsToSign = {
 		folder,

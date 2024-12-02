@@ -8,12 +8,20 @@ import {
 	updateCourse,
 	deleteCourseById,
 	handleCourseStatus,
-	fetchCoursesByStudentId
+	fetchCoursesByStudentId,
+	fetchCourseProgressByStudentId,
+	updateCourseProgressByStudentId
 } from "../thunks/courseThunks";
 
 const courseSlice = createSlice({
 	name: "courses",
-	initialState: { courses: [], course: null, loading: false, error: null },
+	initialState: {
+		courses: [],
+		course: null,
+		courseProgress: null,
+		loading: false,
+		error: null,
+	},
 	reducers: {},
 	extraReducers: (builder) => {
 		builder
@@ -90,28 +98,32 @@ const courseSlice = createSlice({
 				state.error = action.payload;
 			})
 			.addCase(deleteCourseById.pending, (state) => {
-				state.loading = true
-				state.error = null
+				state.loading = true;
+				state.error = null;
 			})
 			.addCase(deleteCourseById.fulfilled, (state, action) => {
-				state.loading = false
-				state.courses = state.courses.filter(course => course._id !== action.payload)
+				state.loading = false;
+				state.courses = state.courses.filter(
+					(course) => course._id !== action.payload
+				);
 			})
 			.addCase(deleteCourseById.rejected, (state, action) => {
-				state.loading = false
-				state.error = action.payload
+				state.loading = false;
+				state.error = action.payload;
 			})
 			.addCase(handleCourseStatus.pending, (state) => {
-				state.loading = true
-				state.error = null
+				state.loading = true;
+				state.error = null;
 			})
 			.addCase(handleCourseStatus.fulfilled, (state, action) => {
-				state.loading = false
-				state.courses = state.courses.map(course => course._id === action.payload._id ? action.payload : course)
+				state.loading = false;
+				state.courses = state.courses.map((course) =>
+					course._id === action.payload._id ? action.payload : course
+				);
 			})
 			.addCase(handleCourseStatus.rejected, (state, action) => {
-				state.loading = false
-				state.error = action.payload
+				state.loading = false;
+				state.error = action.payload;
 			})
 			.addCase(fetchCoursesByStudentId.pending, (state) => {
 				state.loading = true;
@@ -122,6 +134,29 @@ const courseSlice = createSlice({
 				state.courses = action.payload;
 			})
 			.addCase(fetchCoursesByStudentId.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.payload;
+			}).addCase(fetchCourseProgressByStudentId.pending, (state) => {
+				state.loading = true;
+				state.error = null;
+			}).addCase(fetchCourseProgressByStudentId.fulfilled, (state, action) => {
+				state.loading = false;
+				state.courseProgress = action.payload;
+			})
+			.addCase(fetchCourseProgressByStudentId.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.payload;
+			})
+			.addCase(updateCourseProgressByStudentId.pending, (state) => {
+				state.loading = true;
+				state.error = null;
+			})
+			.addCase(updateCourseProgressByStudentId.fulfilled, (state, action) => {
+				console.log(action.payload)
+				state.loading = false;
+				state.courseProgress = action.payload;
+			})
+			.addCase(updateCourseProgressByStudentId.rejected, (state, action) => {
 				state.loading = false;
 				state.error = action.payload;
 			})
