@@ -230,10 +230,29 @@ const updateCourseProgressByStudentId = createAsyncThunk(
 				}
 			);
 			console.log("RESPOSNE:",response)
+			if (response?.data?.quiz) return response?.data
 			return response?.data?.progress;
 		} catch (error) {
 			return rejectWithValue(
 				error?.response?.data?.message || "Failed to UpdateCourse Progress"
+			);
+		}
+	}
+);
+
+const fetchCourseQuizByQuizId = createAsyncThunk(
+	"courses/fetchCourseQuizByQuizId",
+	async (quiz_id, { rejectWithValue }) => {
+		try {
+			console.log(quiz_id)
+			const response = await axiosInstance.get(
+				`/quizzes/get/${quiz_id}`
+			);
+			console.log(response)
+			return response?.data;
+		} catch (error) {
+			return rejectWithValue(
+				error?.response?.data?.message || "Failed to fetch course."
 			);
 		}
 	}
@@ -251,4 +270,5 @@ export {
 	fetchCoursesByStudentId,
 	fetchCourseProgressByStudentId,
 	updateCourseProgressByStudentId,
+	fetchCourseQuizByQuizId
 };

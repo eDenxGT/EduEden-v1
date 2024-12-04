@@ -87,7 +87,7 @@ const Checkout = () => {
 														★
 													</span>
 													<span className="ml-1 text-sm">
-														{course.average_rating}{" "}
+														{(course.average_rating).toFixed(1)}{" "}
 														({course.ratings_count}{" "}
 														ratings)
 													</span>

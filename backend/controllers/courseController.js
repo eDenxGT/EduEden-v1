@@ -4,6 +4,8 @@ const Lecture = require("../models/lectureModel");
 const Student = require("../models/studentModel");
 const CourseProgress = require("../models/courseProgressModel");
 
+const { setupQuiz } = require("../controllers/quizController");
+
 const createCourse = async (req, res) => {
 	const {
 		course_id,
@@ -342,7 +344,6 @@ const updateCourseProgressByStudentId = async (req, res) => {
 	try {
 		const { course_id, student_id, lecture_id, status } = req.body;
 
-		console.log(req.body)
 		const result = await CourseProgress.findOneAndUpdate(
 			{
 				course_id,
@@ -356,10 +357,27 @@ const updateCourseProgressByStudentId = async (req, res) => {
 			},
 			{ new: true }
 		);
-console.log(result)
 		if (!result) {
-			return res.status(404).json({ message: "Course progress not found" });
+			return res
+				.status(404)
+				.json({ message: "Course progress not found" });
 		}
+		// console.log(result)
+
+		const allCompleted = result?.progress?.every(
+			(lecture) => lecture.status === "completed"
+		);
+
+		if (allCompleted && result?.quiz_marks < 7) {
+			const quiz = await setupQuiz(
+				course_id,
+				student_id,
+				(numQuestions = 10)
+			);
+			return res.status(200).json({ message: "Course completed", quiz });
+		}
+
+		// console.log(allCompleted)
 
 		return res.status(200).json({
 			message: "Course progress updated successfully",
@@ -368,6 +386,48 @@ console.log(result)
 	} catch (error) {
 		console.error("Update Course Progress error:", error);
 		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+const updateCourseReviews = async (req, res) => {
+	try {
+		const { course_id, rating, student_id } = req.body;
+		const courseProgressOfStudent = await CourseProgress.findOne({
+			course_id,
+			student_id,
+		});
+		if (courseProgressOfStudent?.is_review_rated === true) {
+			return res
+				.status(400)
+				.json({ message: "You already rated this course" });
+		}
+		courseProgressOfStudent.is_review_rated = true;
+		const courseUpdated = await Course.updateOne({ course_id }, [
+			{
+				$set: {
+					ratings: { $concatArrays: ["$ratings", [rating]] },
+					ratings_count: { $add: ["$ratings_count", 1] },
+					average_rating: {
+						$divide: [
+							{ $add: [{ $sum: "$ratings" }, rating] },
+							{ $add: ["$ratings_count", 1] },
+						],
+					},
+				},
+			},
+		]);
+
+		const submitted = await courseProgressOfStudent.save();
+		if (!submitted || !courseUpdated) {
+			return res.status(400).json({
+				message:
+					"Something went wrong while review submitting... Please try again.",
+			});
+		}
+		return res.status(200).json({ message: "Thanks for your feedback." });
+	} catch (error) {
+		console.log("Course Review Updating Error: ", error);
+		return res.json({ message: "Internal Server Error" });
 	}
 };
 
@@ -383,4 +443,5 @@ module.exports = {
 	getCoursesByStudentId,
 	getCourseProgressByStudentId,
 	updateCourseProgressByStudentId,
+	updateCourseReviews,
 };

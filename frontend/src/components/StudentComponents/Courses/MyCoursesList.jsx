@@ -83,10 +83,7 @@ const MyCourses = () => {
 							<BookOpen className="w-6 h-6" />
 							<span>{courses?.length} Courses</span>
 						</div>
-						<div className="flex items-center space-x-2">
-							<Clock className="w-6 h-6" />
-							<span>{getTotalDuration()} hours</span>
-						</div>
+
 					</div>
 				</div>
 

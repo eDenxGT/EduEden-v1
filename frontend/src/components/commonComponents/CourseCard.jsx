@@ -16,7 +16,7 @@ const CourseCard = ({
 	const dropdownRef = useRef(null);
 	const moreButtonRef = useRef(null);
 	const navigate = useNavigate();
-  const dispatch = useDispatch()
+	const dispatch = useDispatch();
 
 	const menuOptions = {
 		student: [
@@ -56,8 +56,8 @@ const CourseCard = ({
 			{
 				label: course.is_listed ? "Unlist Course" : "List Course",
 				action: () => {
-          dispatch(handleCourseStatus(course?.course_id))
-        }
+					dispatch(handleCourseStatus(course?.course_id));
+				},
 			},
 		],
 	};
@@ -120,29 +120,34 @@ const CourseCard = ({
 					}`}>
 					{course.title}
 				</h3>
-        {/* <hr className="mb-3 mt-1"/> */}
+				{/* <hr className="mb-3 mt-1"/> */}
 				<div className="flex items-center  justify-between text-xs mb-2">
-        <div className="flex items-center">
-
 					<div className="flex items-center">
-						<Star className="w-3 h-3 text-yellow-400 fill-current" />
-						<span
-							className={`ml-1 ${
-								isDarkMode ? "text-gray-300" : "text-gray-500"
-							}`}>
-							{course.average_rating ?? 0}
-						</span>
+						<div className="flex items-center">
+							<Star className="w-3 h-3 text-yellow-400 fill-current" />
+							<span
+								className={`ml-1 ${
+									isDarkMode
+										? "text-gray-300"
+										: "text-gray-500"
+								}`}>
+								{(course.average_rating === 0
+									? 0
+									: course.average_rating.toFixed(1)) ?? 0}
+							</span>
+						</div>
+						<div className="flex items-center ml-2">
+							<User className="w-3 h-3 text-[#564FFD]" />
+							<span
+								className={`ml-1 ${
+									isDarkMode
+										? "text-gray-300"
+										: "text-gray-500"
+								}`}>
+								{course.enrolled_count} students
+							</span>
+						</div>
 					</div>
-					<div className="flex items-center ml-2">
-						<User className="w-3 h-3 text-[#564FFD]" />
-						<span
-							className={`ml-1 ${
-								isDarkMode ? "text-gray-300" : "text-gray-500"
-							}`}>
-							{course.enrolled_count} students
-						</span>
-					</div>
-        </div>
 					<div className="relative">
 						<button
 							className={`rounded-full p-1 ${

@@ -39,6 +39,14 @@ const CourseProgress = new mongoose.Schema(
         type: Number,
       },
 		},
+		quiz_marks: {
+			type: Number,
+			default: 0,
+		},
+		is_review_rated: {
+			type: Boolean,
+			default: false,
+		},
 		enrollment_date: {
 			type: Date,
 			default: Date.now,

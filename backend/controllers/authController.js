@@ -526,7 +526,6 @@ const tutorSignUp = async (req, res) => {
 const tutorSignIn = async (req, res) => {
 	try {
 		const { email, password, remember } = req.body;
-
 		const tutor = await Tutor.findOne({
 			$or: [{ email }, { user_name: email }],
 		});

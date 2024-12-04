@@ -22,6 +22,7 @@ const lectureRouter = require("./routes/lectureRoute");
 const wishlistRouter = require("./routes/wishlistRoute");
 const cartRouter = require("./routes/cartRoute");
 const paymentRouter = require("./routes/paymentRoute");
+const quizRouter = require("./routes/quizRoute")
 
 
 const app = express();
@@ -53,6 +54,7 @@ app.use("/courses", courseRouter);
 app.use("/lectures", lectureRouter);
 app.use("/cart", cartRouter);
 app.use("/wishlist", wishlistRouter);
+app.use("/quizzes", quizRouter);
 
 app.use("/api/upload", uploadRouter);
 app.use("/payment", paymentRouter);

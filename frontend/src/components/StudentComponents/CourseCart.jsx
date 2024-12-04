@@ -107,7 +107,7 @@ const CourseCart = () => {
                           <h3 className="font-medium mb-1">{course.title}</h3>
                           <div className="flex items-center gap-2 mb-1">
                             <Star className="w-4 h-4 text-yellow-400" />
-                            <span className="font-medium">{course.average_rating}</span>
+                            <span className="font-medium">{(course.average_rating).toFixed(1)}</span>
                             <span className="text-gray-500 text-sm">
                               ({course?.ratings_count} Reviews)
                             </span>

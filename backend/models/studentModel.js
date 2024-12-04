@@ -47,6 +47,11 @@ const StudentSchema = new mongoose.Schema(
 				ref: "Quiz",
 			},
 		],
+		certificates_earned: [
+			{
+				type: String,
+			},
+		],
 		is_blocked: {
 			type: Boolean,
 			default: false,

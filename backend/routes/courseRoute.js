@@ -12,7 +12,8 @@ const {
 	handleCourseStatus,
 	getCoursesByStudentId,
 	getCourseProgressByStudentId,
-	updateCourseProgressByStudentId
+	updateCourseProgressByStudentId,
+	updateCourseReviews
 } = require("../controllers/courseController");
 
 courseRouter
@@ -26,6 +27,7 @@ courseRouter
 	.put("/status/:course_id", handleCourseStatus)
 	.get("/student/my-courses/:student_id", getCoursesByStudentId)
 	.get(`/get-progress/:student_id/:course_id`, getCourseProgressByStudentId)
-	.put("/update-course-progress", updateCourseProgressByStudentId);
+	.put("/update-course-progress", updateCourseProgressByStudentId)
+	.put("/review", updateCourseReviews);
 
 module.exports = courseRouter;

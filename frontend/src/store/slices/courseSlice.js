@@ -10,7 +10,8 @@ import {
 	handleCourseStatus,
 	fetchCoursesByStudentId,
 	fetchCourseProgressByStudentId,
-	updateCourseProgressByStudentId
+	updateCourseProgressByStudentId,
+	fetchCourseQuizByQuizId
 } from "../thunks/courseThunks";
 
 const courseSlice = createSlice({
@@ -19,6 +20,7 @@ const courseSlice = createSlice({
 		courses: [],
 		course: null,
 		courseProgress: null,
+		courseQuiz: null,
 		loading: false,
 		error: null,
 	},
@@ -152,13 +154,18 @@ const courseSlice = createSlice({
 				state.error = null;
 			})
 			.addCase(updateCourseProgressByStudentId.fulfilled, (state, action) => {
-				console.log(action.payload)
 				state.loading = false;
 				state.courseProgress = action.payload;
 			})
 			.addCase(updateCourseProgressByStudentId.rejected, (state, action) => {
 				state.loading = false;
 				state.error = action.payload;
+			})
+			.addCase(fetchCourseQuizByQuizId.fulfilled, (state, action) => {
+				console.log(action.payload)
+				state.loading = false;
+				state.courseQuiz = action.payload;
+				console.log(state.courseQuiz)
 			})
 	},
 });

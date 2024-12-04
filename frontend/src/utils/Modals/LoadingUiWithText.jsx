@@ -1,10 +1,8 @@
 /* eslint-disable react/prop-types */
 import { PiGraduationCap } from "react-icons/pi";
-import { useLoading } from "../../contexts/LoadingContext";
 
 const LoadingUi = ({ isDarkMode = true, text }) => {
-	const textArray = text.split("");
-	console.log(textArray);
+	const textArray = text?.split("");
 
 	const letters = textArray || ["E", "d", "u", "E", "d", "e", "n"];
 

@@ -102,7 +102,7 @@ const PurchasedCourseDetails = () => {
                       ))}
                     </div>
                     <span className="font-semibold">
-                      {purchasedCourse.average_rating}
+                      {(purchasedCourse.average_rating).toFixed(1)}
                     </span>
                     <span className="text-gray-500">
                       ({purchasedCourse.ratings_count} Ratings)
@@ -155,8 +155,8 @@ const PurchasedCourseDetails = () => {
                           <div className="py-2 flex items-center justify-between text-gray-600 hover:bg-gray-50">
                             <span>Duration: {lecture.duration}</span>
                             <Button
-                              text={lecture.completed ? "Completed" : "Start"}
-                              className={`px-4 py-2 rounded ${
+                              text={"Start"}
+                              className={` py-2  rounded-none max-w-fit px-5 ${
                                 lecture.completed
                                   ? "bg-green-500 text-white"
                                   : "bg-orange-500 text-white"
