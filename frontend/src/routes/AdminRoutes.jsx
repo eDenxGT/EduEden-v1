@@ -27,15 +27,7 @@ const AdminRoutes = () => {
 					}
 				/>
 
-				<Route
-					path="/"
-					element={
-						<PrivateRoute
-							allowedRole="admin"
-							redirectTo="/admin/signin">
-							<AdminLayout />
-						</PrivateRoute>
-					}>
+				<Route path="/"element={<PrivateRoute allowedRole="admin" redirectTo="/admin/signin"><AdminLayout /></PrivateRoute>}>
 					<Route path="dashboard" element={<AdminDashboard />} />
 					<Route path="tutors" element={<TutorManagement />} />
 					<Route path="students" element={<StudentManagement />} />

@@ -28,6 +28,7 @@ const AdminDashboard = () => {
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-b from-gray-50 to-gray-100 text-gray-800'}`}>
+    
       <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>

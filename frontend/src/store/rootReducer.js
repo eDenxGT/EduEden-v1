@@ -21,12 +21,12 @@ const persistConfig = {
 		"tutor",
 		"admin",
 		"public",
-		"categories",
-		"courses",
-		"lectures",
+		// "categories",
+		// "courses",
+		// "lectures",
 		"newCourse",
 		"updateCourse",
-		"cart"
+		// "cart"
 	],
 };
 

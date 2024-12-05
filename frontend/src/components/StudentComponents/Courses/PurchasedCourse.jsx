@@ -14,7 +14,7 @@ import Card from "@/components/CommonComponents/Card";
 import { fetchCoursesByCourseId } from "../../../store/thunks/courseThunks";
 import { useParams, Link as RouterLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useLoading } from "../../../contexts/LoadingContext";
+// import { useLoading } from "../../../contexts/LoadingContext";
 
 const PurchasedCourseDetails = () => {
   const navigate = useNavigate();
