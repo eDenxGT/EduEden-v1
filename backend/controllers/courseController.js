@@ -176,8 +176,10 @@ const getCoursesByStudentId = async (req, res) => {
 		}
 		const coursesEnrolledByStudent = await Course.find({
 			course_id: { $in: student.active_courses },
+			is_listed: true,
 		});
 
+		console.log(coursesEnrolledByStudent)
 		return res.status(200).json({ courses: coursesEnrolledByStudent });
 	} catch (error) {
 		console.log("Get Courses By Student Id error : ", error);
@@ -343,6 +345,7 @@ const getCourseProgressByStudentId = async (req, res) => {
 const updateCourseProgressByStudentId = async (req, res) => {
 	try {
 		const { course_id, student_id, lecture_id, status } = req.body;
+		console.log(req.body)
 
 		const result = await CourseProgress.findOneAndUpdate(
 			{
@@ -357,12 +360,12 @@ const updateCourseProgressByStudentId = async (req, res) => {
 			},
 			{ new: true }
 		);
+		console.log(result)
 		if (!result) {
 			return res
 				.status(404)
 				.json({ message: "Course progress not found" });
 		}
-		// console.log(result)
 
 		const allCompleted = result?.progress?.every(
 			(lecture) => lecture.status === "completed"

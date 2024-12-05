@@ -5,16 +5,31 @@ const getCartItemsByUserId = async (req, res) => {
 	try {
 		const user_id = req.params.user_id;
 		const cart = await Cart.aggregate([
-			{ $match: { user_id } },
+			{ $match: { user_id } }, 
 			{
-				$lookup: {
-					from: "courses",
-					localField: "courses.course_id",
-					foreignField: "course_id",
-					as: "courses",
-				},
+			  $lookup: {
+				 from: "courses",
+				 localField: "courses.course_id",
+				 foreignField: "course_id",
+				 as: "courses",
+			  },
 			},
-		]);
+			{
+			  $project: {
+				 user_id: 1,
+				 courses: {
+					$filter: {
+					  input: "$courses",
+					  as: "course",
+					  cond: { $eq: ["$$course.is_listed", true] }, 
+					},
+				 },
+			  },
+			},
+		 ]);
+		 
+		 console.log(cart);
+		 
 
 		return res.status(200).json({ cart: cart[0] });
 	} catch (error) {

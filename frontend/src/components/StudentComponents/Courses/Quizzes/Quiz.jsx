@@ -19,7 +19,6 @@ const Quiz = () => {
 	const [isSubmitted, setIsSubmitted] = useState(false);
 	const isDarkMode = useSelector((state) => state.student.toggleTheme);
 	const { quiz_id, course_id } = useParams();
-console.log(answers  )
 	useEffect(() => {
 		const timer = setInterval(() => {
 			setTimeLeft((prevTime) => {

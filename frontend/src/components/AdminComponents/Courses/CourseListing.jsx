@@ -26,7 +26,7 @@ const CourseListing = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const coursesPerPage = 12; // Adjust this value as needed
+  const coursesPerPage = 4; 
 
   useEffect(() => {
     const fetchAllCourses = async () => {

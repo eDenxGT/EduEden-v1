@@ -7,7 +7,7 @@ const StudentLayout = () => {
 		<>
 			<Header role="student" />
 			<Outlet />
-      <Footer />
+			<Footer />
 		</>
 	);
 };

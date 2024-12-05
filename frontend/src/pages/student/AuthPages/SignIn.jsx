@@ -159,7 +159,13 @@ const SignIn = () => {
 		dispatch(
 			studentLogin({ studentData: data.userData, token: data.token })
 		);
-		toast.success("Google sign-in was successful.");
+		// toast.success("Google sign-in was successful.");
+		const accessToken = data?.accessToken;
+				if (!accessToken) {
+					throw new Error("Access token not provided in response.");
+				}
+				toast.success(data?.message);
+				storeAccessToken("student", accessToken, 13);
 		setTimeout(() => {
 			navigate("/student/home");
 		}, 1500);

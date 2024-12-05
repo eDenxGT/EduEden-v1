@@ -154,8 +154,14 @@ const TutorSignIn = () => {
   }
 
 	const onGoogleSignInSuccess = async (data) => {
-		toast.success("Google sign-in was successful.");
+		// toast.success("Google sign-in was successful.");
 		dispatch(tutorLogin({ tutorData: data.userData, token: data.token }));
+		const accessToken = data?.accessToken;
+		if (!accessToken) {
+			throw new Error("Access token not provided in response.");
+		}
+		toast.success(data?.message);
+		storeAccessToken("tutor", accessToken, 1);
 		setTimeout(() => {
 			navigate("/tutor/dashboard");
 		}, 1500);

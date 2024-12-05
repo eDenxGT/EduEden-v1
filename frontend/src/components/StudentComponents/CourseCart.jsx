@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Star, Trash2, ShoppingBag } from 'lucide-react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,7 +9,7 @@ import { removeFromCart } from '../../store/thunks/cartThunks';
 const CourseCart = () => {
   const { cart } = useSelector((state) => state.cart);
   const [courses, setCourses] = useState([]);
-  const [couponCode, setCouponCode] = useState('');
+  // const [couponCode, setCouponCode] = useState('');
   const dispatch = useDispatch()
   const {student_id} = useParams()
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ const CourseCart = () => {
   };
 
 
-  if (courses?.length === 0) {
+  if (courses?.length === 0 || !courses) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
@@ -106,7 +106,7 @@ const CourseCart = () => {
                         <div>
                           <h3 className="font-medium mb-1">{course.title}</h3>
                           <div className="flex items-center gap-2 mb-1">
-                            <Star className="w-4 h-4 text-yellow-400" />
+                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                             <span className="font-medium">{(course.average_rating).toFixed(1)}</span>
                             <span className="text-gray-500 text-sm">
                               ({course?.ratings_count} Reviews)

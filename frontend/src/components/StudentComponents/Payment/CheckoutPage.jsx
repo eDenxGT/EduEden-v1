@@ -1,5 +1,5 @@
-import  { useState, useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Card from "@/components/CommonComponents/Card";
 import RazorpayButton from "../../../Services/Payment";
@@ -9,22 +9,31 @@ const Checkout = () => {
 	const { cart } = useSelector((state) => state.cart);
 	const [courses, setCourses] = useState([]);
 	const { student_id } = useParams();
-   const navigate = useNavigate();
+	const navigate = useNavigate();
+	const location = useLocation();
+	const [isSinglePurchase, setIsSinglePurchase] = useState(false);
 
 	useEffect(() => {
-		setCourses(cart);
-	}, [cart?.length]);
+		console.log("FETCHIGN CHCEKOUT");
+		if (location.state?.singlePurchaseCourse) {
+			setCourses([location.state.singlePurchaseCourse]);
+			setIsSinglePurchase(true);
+		} else {
+			setCourses(cart);
+		}
+	}, [location.state, cart?.length]);
 
-   const handlePaymentSuccess = () => {
-      if (courses?.length > 1) {
-         navigate(`/student/my-courses`);
-      } else if (courses?.length === 1) {
-         navigate(
-            `/student/my-courses/${courses[0]?.course_id}`
-         );
-      }
-   }
-
+	const handlePaymentSuccess = () => {
+		if (isSinglePurchase) {
+			navigate(`/student/my-courses/${courses[0]?.course_id}`);
+		} else {
+			if (courses?.length > 1) {
+				navigate(`/student/my-courses`);
+			} else if (courses?.length === 1) {
+				navigate(`/student/my-courses/${courses[0]?.course_id}`);
+			}
+		}
+	};
 
 	const subtotal =
 		courses?.reduce((acc, course) => acc + course?.price, 0) || 0;
@@ -44,14 +53,29 @@ const Checkout = () => {
 									Courses
 								</Link>
 							</li>
-							<li>
-								<span className="text-gray-400 mx-2">/</span>
-								<Link
-									to={`/student/cart/${student_id}`}
-									className="text-gray-500 hover:text-gray-700">
-									Shopping Cart
-								</Link>
-							</li>
+							{isSinglePurchase ? (
+								<li>
+									<span className="text-gray-400 mx-2">
+										/
+									</span>
+									<Link
+										to={`/student/courses/${courses[0]?.course_id}`}
+										className="text-gray-500 hover:text-gray-700">
+										{courses[0]?.title}
+									</Link>
+								</li>
+							) : (
+								<li>
+									<span className="text-gray-400 mx-2">
+										/
+									</span>
+									<Link
+										to={`/student/cart/${student_id}`}
+										className="text-gray-500 hover:text-gray-700">
+										Shopping Cart
+									</Link>
+								</li>
+							)}
 							<li>
 								<span className="text-gray-400 mx-2">/</span>
 								<span className="text-gray-900">Checkout</span>
@@ -87,7 +111,9 @@ const Checkout = () => {
 														★
 													</span>
 													<span className="ml-1 text-sm">
-														{(course.average_rating).toFixed(1)}{" "}
+														{course.average_rating.toFixed(
+															1
+														)}{" "}
 														({course.ratings_count}{" "}
 														ratings)
 													</span>
@@ -138,7 +164,7 @@ const Checkout = () => {
 										courses={courses}
 										student_id={student_id}
 										amount={total}
-                              handleSuccess={handlePaymentSuccess}
+										handleSuccess={handlePaymentSuccess}
 										className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 text-lg font-semibold"
 									/>
 									<p className="text-xs text-gray-500 text-center mt-2">

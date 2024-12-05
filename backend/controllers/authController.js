@@ -200,7 +200,7 @@ const verifyOtp = async (req, res) => {
 		}
 		const randomPart = Math.random().toString(36).substring(2, 6); // 4 random alphanumeric characters
 		const timestampPart = Date.now().toString().slice(-4); // Last 4 digits of the current timestamp
-		const uniqueUserId =  `edueden${randomPart}${timestampPart}`;
+		const uniqueUserId = `edueden${randomPart}${timestampPart}`;
 
 		let userData;
 		if (unverifiedUser.role === "student") {
@@ -211,7 +211,7 @@ const verifyOtp = async (req, res) => {
 				phone: unverifiedUser.phone,
 				password: unverifiedUser.password,
 				is_verified: true,
-				user_id: uniqueUserId
+				user_id: uniqueUserId,
 			});
 			await userData.save();
 		} else if (unverifiedUser.role === "tutor") {
@@ -222,7 +222,7 @@ const verifyOtp = async (req, res) => {
 				phone: unverifiedUser.phone,
 				password: unverifiedUser.password,
 				is_verified: true,
-				user_id: uniqueUserId
+				user_id: uniqueUserId,
 			});
 			await userData.save();
 		}
@@ -290,6 +290,97 @@ const resendOtp = async (req, res) => {
 		});
 	}
 };
+
+// const googleAuth = async (req, res) => {
+// 	const { token, role } = req.body;
+
+// 	if (!token || !role) {
+// 		return res.status(400).json({ error: "Token and role are required" });
+// 	}
+
+// 	if (!["student", "tutor"].includes(role)) {
+// 		return res.status(400).json({ error: "Invalid role specified" });
+// 	}
+
+// 	try {
+// 		const client = new OAuth2Client({
+// 			clientId: process.env.GOOGLE_CLIENT_ID,
+// 			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+// 		});
+
+// 		const ticket = await client.verifyIdToken({
+// 			idToken: token,
+// 			audience: process.env.GOOGLE_CLIENT_ID,
+// 		});
+
+// 		const payload = ticket.getPayload();
+
+// 		if (!payload.email_verified) {
+// 			console.log("Unverified email: ", payload.email);
+// 			return res.status(401).json({ message: "Email not verified" });
+// 		}
+
+// 		const { name, email, sub, picture } = payload;
+
+// 		const isOtherRoleExists = await (async () => {
+// 			if (role === "student") {
+// 				return await Tutor.findOne({ email });
+// 			} else if (role === "tutor") {
+// 				return await Student.findOne({ email });
+// 			}
+// 			return false;
+// 		})();
+
+// 		if (isOtherRoleExists) {
+// 			return res.status(401).json({
+// 				message: `This account is a ${
+// 					role === "student" ? "Tutor" : "Student"
+// 				} account.`,
+// 			});
+// 		}
+
+// 		const User = role === "student" ? Student : Tutor;
+
+// 		let user = await User.findOne({ email });
+
+// 		if (user && user.is_blocked) {
+// 			return res.status(401).json({
+// 				message:
+// 					"Your account has been blocked. Please contact the support team.",
+// 			});
+// 		}
+
+// 		if (!user) {
+// 			user = new User({
+// 				full_name: name,
+// 				email,
+// 				google_id: sub,
+// 				avatar: picture,
+// 			});
+// 		} else if (!user.google_id) {
+// 			user.google_id = sub;
+// 			if (!user.avatar) {
+// 				user.avatar = picture;
+// 			}
+// 		}
+// 		await user.save();
+
+// 		const userToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+// 			expiresIn: "1d",
+// 		});
+
+// 		const { password, ...userDetails } = user.toObject();
+
+// 		return res
+// 			.status(200)
+// 			.json({ token: userToken, userData: userDetails });
+// 	} catch (error) {
+// 		console.error("Google Auth Error: ", error.stack || error);
+// 		res.status(500).json({
+// 			message: "Internal server error. Please try again.",
+// 		});
+// 	}
+// };
 
 const googleAuth = async (req, res) => {
 	const { token, role } = req.body;
@@ -365,15 +456,49 @@ const googleAuth = async (req, res) => {
 		}
 		await user.save();
 
-		const userToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-			expiresIn: "1d",
+		const userDataToGenerateToken = {
+			_id: user._id,
+			email: user.email,
+			role,
+		};
+
+		const accessToken = generateAccessToken(role, userDataToGenerateToken);
+		const refreshToken = generateRefreshToken(
+			role,
+			userDataToGenerateToken
+		);
+
+		const newRefreshToken = new RefreshToken({
+			token: refreshToken,
+			user: role,
+			user_id: user._id,
+			expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
 		});
+
+		const savedToken = await newRefreshToken.save();
 
 		const { password, ...userDetails } = user.toObject();
 
-		return res
-			.status(200)
-			.json({ token: userToken, userData: userDetails });
+		if (savedToken) {
+			storeToken(
+				`${role}RefreshToken`,
+				refreshToken,
+				7 * 24 * 60 * 60 * 1000,
+				res
+			);
+
+			return res.status(200).json({
+				success: true,
+				message: `${
+					role.charAt(0).toUpperCase() + role.slice(1)
+				} logged in successfully`,
+				userData: userDetails,
+				accessToken,
+				role,
+			});
+		}
+
+		res.status(500).json({ message: "Failed to log in" });
 	} catch (error) {
 		console.error("Google Auth Error: ", error.stack || error);
 		res.status(500).json({

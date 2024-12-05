@@ -150,7 +150,7 @@ const SingleCourseDetails = () => {
                 <div>
                   <p className="text-sm text-gray-500">Visibility</p>
                   <p className={course.is_visible ? "text-green-500" : "text-red-500"}>
-                    {course.is_visible ? "Listed" : "Un Listed"}
+                    {course.is_visible ? "Un Listed " : "Listed"}
                   </p>
                 </div>
               </div>
@@ -169,7 +169,7 @@ const SingleCourseDetails = () => {
           <StatCard
             icon={<Star className="w-6 h-6 text-yellow-500" />}
             title="Average Rating"
-            value={course.average_rating || 0}
+            value={(course.average_rating).toFixed(1) || 0}
             subtitle={`(${course.ratings_count || 0} ratings)`}
             isDarkMode={isDarkMode}
           />

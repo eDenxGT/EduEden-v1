@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
 	Star,
 	Clock,
 	Users,
 	Globe,
 	Play,
-	Heart,
 	FileText,
 	ChevronDown,
-	Link,
 	User2Icon,
 	CopyIcon,
-	ChevronLeft,
 } from "lucide-react";
 import Button from "@/components/CommonComponents/Button";
 import Card from "@/components/CommonComponents/Card";
@@ -26,8 +23,8 @@ const SingleCourseDetails = () => {
 	const [activeAccordion, setActiveAccordion] = useState(null);
 	const [copied, setCopied] = useState(false);
 	const { course_id } = useParams();
-	const { course, loading } = useSelector((state) => state.courses);
-	const {user_id} = useSelector((state) => state.student.studentData);
+	const { course } = useSelector((state) => state.courses);
+	const { user_id } = useSelector((state) => state.student.studentData);
 	const { cart } = useSelector((state) => state.cart);
 
 	const isCourseInCart = cart?.some((item) => item?.course_id === course_id);
@@ -60,8 +57,14 @@ const SingleCourseDetails = () => {
 		}
 	}, []);
 
+	const handleBuyNow = () => {
+		navigate(`/student/checkout/${user_id}`, {
+			state: { singlePurchaseCourse: course },
+		});
+	};
+
 	const handleGoToCourse = async () => {
-    navigate(`/student/my-courses/${course?.course_id}`)
+		navigate(`/student/my-courses/${course?.course_id}`);
 	};
 	const handleAddToCart = async () => {
 		await dispatch(addToCart({ course_id, user_id })).unwrap();
@@ -127,7 +130,7 @@ const SingleCourseDetails = () => {
 											))}
 										</div>
 										<span className="font-semibold">
-											{course?.average_rating}
+											{(course?.average_rating)?.toFixed(1)}
 										</span>
 										<span className="text-gray-500">
 											({course?.ratings_count} Ratings)
@@ -280,6 +283,7 @@ const SingleCourseDetails = () => {
 									{!isAlreadyPurchased && (
 										<>
 											<Button
+												onClick={handleBuyNow}
 												text="Buy Now"
 												className="w-full bg-orange-100 font-semibold text-orange-500 hover:bg-orange-200 py-3"
 											/>

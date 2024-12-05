@@ -12,6 +12,7 @@ import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { studentLogin } from "../../../store/slices/studentSlice";
+import storeAccessToken from "../../../api/storeAccessToken";
 
 const SignUp = () => {
 	const [formData, setFormData] = useState({
@@ -170,7 +171,13 @@ const SignUp = () => {
 		dispatch(
 			studentLogin({ studentData: data.userData, token: data.token })
 		);
-		toast.success("Google sign-in was successful.");
+		const accessToken = data?.accessToken;
+		if (!accessToken) {
+			throw new Error("Access token not provided in response.");
+		}
+		toast.success(data?.message);
+		storeAccessToken("student", accessToken, 13);
+		// toast.success("Google sign-in was successful.");
 		setTimeout(() => {
 			navigate("/student/home");
 		}, 1500);

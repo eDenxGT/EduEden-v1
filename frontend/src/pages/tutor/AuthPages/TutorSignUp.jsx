@@ -12,6 +12,7 @@ import OtpVerificationModal from "../../../utils/Modals/OtpVerificationModal";
 import GoogleAuthButton from "../../../utils/GoogleAuth/GoogleAuthButton";
 import { useDispatch } from "react-redux";
 import { tutorLogin } from "../../../store/slices/tutorSlice";
+import storeAccessToken from "../../../api/storeAccessToken";
 
 const TutorSignup = () => {
 	const [formData, setFormData] = useState({
@@ -178,7 +179,13 @@ const TutorSignup = () => {
 
 	const onGoogleSignUpSuccess = async (data) => {
 		dispatch(tutorLogin({ tutorData: data.userData, token: data.token }));
-		toast.success("Google sign-in was successful.");
+		// toast.success("Google sign-in was successful.");
+		const accessToken = data?.accessToken;
+		if (!accessToken) {
+			throw new Error("Access token not provided in response.");
+		}
+		toast.success(data?.message);
+		storeAccessToken("tutor", accessToken, 1);
 		setTimeout(() => {
 			navigate("/tutor/dashboard");
 		}, 1500);
